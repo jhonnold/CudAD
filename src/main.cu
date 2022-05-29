@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/exp3/run2/";
+std::string output = "./resources/runs/exp3/run3/";
 
 int main() {
     init();
@@ -81,7 +81,7 @@ int main() {
     // optimizer
     Adam adam {};
     adam.init(layers);
-    adam.alpha = 0.000875;
+    adam.alpha = 0.001;
     adam.beta1 = 0.9;
     adam.beta2 = 0.999;
     adam.eps = 1e-7;
@@ -139,9 +139,10 @@ int main() {
 
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
         network.saveWeights(output + "weights-epoch" + std::to_string(epoch) + ".nnue");
-        quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 256 * S);
+        quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 128, 128 * S);
 
-        adam.alpha *= 0.992;
+        if (epoch % 75 == 0)
+            adam.alpha *= 0.3;
     }
 
     close();
