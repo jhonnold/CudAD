@@ -77,6 +77,28 @@ void writeLayer(FILE* file, Tape* tunable_values, float wgt_scaling, float bia_s
     writeMatrix<bia_type>(file, bia, bia_scaling);
 }
 
+void write_4(const std::string& path, Network& network, float quant_one, float quant_hidden, float quant_out, float nn_scale) {
+    FILE *f = fopen(path.c_str(), "wb");
+
+    network.getLayers()[0]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[1]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[1]->getTunableParameters()[1]->values.gpu_download();
+    network.getLayers()[2]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[2]->getTunableParameters()[1]->values.gpu_download();
+    network.getLayers()[3]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[3]->getTunableParameters()[1]->values.gpu_download();
+
+    writeLayer<int16_t, int16_t>(f, network.getLayers()[0]->getTunableParameters()[0], quant_one, quant_one, true);
+    writeMatrix<int8_t>(f, network.getLayers()[1]->getTunableParameters()[0]->values, quant_hidden, false);
+    writeMatrix<int32_t>(f, network.getLayers()[1]->getTunableParameters()[1]->values, quant_hidden * quant_one, false);
+    writeMatrix<int8_t>(f, network.getLayers()[2]->getTunableParameters()[0]->values, quant_hidden, false);
+    writeMatrix<int32_t>(f, network.getLayers()[2]->getTunableParameters()[1]->values, quant_hidden * quant_one, false);
+    writeMatrix<int8_t>(f, network.getLayers()[3]->getTunableParameters()[0]->values, nn_scale * quant_out / quant_one, false);
+    writeMatrix<int32_t>(f, network.getLayers()[3]->getTunableParameters()[1]->values, nn_scale * quant_out, false);
+
+    fclose(f);
+}
+
 void quantitize(const std::string& path, Network& network, float scalar_1 = 16, float scalar_2 = 512) {
     FILE *f = fopen(path.c_str(), "wb");
 

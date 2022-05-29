@@ -19,10 +19,11 @@ class DuplicateDenseLayer : public LayerInterface {
     float lasso_regularization = 0;
 
     explicit DuplicateDenseLayer(int expected_active_inputs = I) {
-        weights.values.randomiseGaussian(0, 2.0f / sqrtf((float) expected_active_inputs));
-
+        double sigma = 1.0 / sqrt(expected_active_inputs);
+        weights.values.randomiseUniform(-sigma, sigma);
+        bias.values.randomiseUniform(-sigma, sigma);
         weights.values.gpu_upload();
-        bias.values.gpu_upload();
+        bias   .values.gpu_upload();
     }
 
     void apply(std::vector<Tape*> inputs, Tape& out) override {

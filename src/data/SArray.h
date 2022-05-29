@@ -245,6 +245,7 @@ class SArray {
             this->cpu_values[i] = static_cast<Type>(rand()) / RAND_MAX * (upper - lower) + lower;
         }
     }
+    
     void randomiseGaussian(Type mean, Type deviation) {
         if (cpu_values == nullptr)
             return;
@@ -253,6 +254,18 @@ class SArray {
         for (int i = 0; i < size; i++) {
             this->cpu_values[i] = distribution(generator);
         }
+    }
+
+    void randomiseUniform(double lo, double hi) {
+        if (cpu_values == nullptr)
+            return;
+        
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution distribution(lo, hi);
+
+        for (int i = 0; i < size; i++)
+            this->cpu_values[i] = distribution(gen);
     }
 
     [[nodiscard]] SArray<Type> newInstance() const { return SArray<Type> {size}; }
