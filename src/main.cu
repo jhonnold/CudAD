@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/exp3/";
+std::string output = "./resources/runs/exp3/run2/";
 
 int main() {
     init();
@@ -39,7 +39,7 @@ int main() {
     constexpr uint32_t       I = 8 * 12 * 64;
     constexpr uint32_t       H = 512;
     constexpr uint32_t       O = 1;
-    constexpr uint32_t       B = 16384;
+    constexpr uint32_t       B = 8192;
     constexpr uint32_t     BPE = 100000000 / B;
     constexpr  int32_t       E = 1000;
 
@@ -64,7 +64,7 @@ int main() {
     l1.lasso_regularization = 1.0 / 8388608.0 / B;
 
     DenseLayer<H * 2, O, Sigmoid>   l2 {};
-    dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 1.0 / 139;
+    dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 231 * 3.68415 / 512;
 
     // stack layers to build network
     std::vector<LayerInterface*> layers {};
@@ -80,9 +80,10 @@ int main() {
     // optimizer
     Adam adam {};
     adam.init(layers);
-    adam.alpha = 0.015;
-    adam.beta1 = 0.95;
+    adam.alpha = 0.000875;
+    adam.beta1 = 0.9;
     adam.beta2 = 0.999;
+    adam.eps = 1e-7;
 
     CSVWriter csv {output + "loss.csv"};
 
@@ -138,8 +139,7 @@ int main() {
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
         quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
 
-        if (epoch % 300 == 0)
-            adam.alpha *= 0.1;
+        adam.alpha *= 0.992;
     }
 
     close();
