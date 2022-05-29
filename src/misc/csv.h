@@ -20,11 +20,13 @@ struct CSVWriter {
         csv_file.close();
     }
 
-    void write(std::initializer_list<std::string> args){
-        for(auto h:args){
-            csv_file << "\"" << h << "\"" << ",";
-        }
-        csv_file <<"\n" << std::flush;
+    void write(std::initializer_list<std::string> args) {
+        csv << "\"" << args[0] << "\"";
+
+        for (size_t i = 1; i < args.size(); i++)
+            csv_file << "," << "\"" << args[i] << "\"";
+
+        csv_file << std::endl;
     }
 
 };
