@@ -337,7 +337,7 @@ inline void assign_input(Position&      p,
         w_value = -w_value;
     }
 
-    float p_target      = 1 / (1 + expf(-p_value / 135));
+    float p_target      = 1 / (1 + expf(-p_value / 139));
     float w_target      = (w_value + 1) / 2.0f;
 
     output(id)          = (p_target + w_target) / 2;
