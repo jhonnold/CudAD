@@ -64,7 +64,7 @@ int main() {
     l1.lasso_regularization = 1.0 / 8388608.0;
 
     DenseLayer<H * 2, O, Sigmoid>   l2 {};
-    dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 512.0 / 139;
+    dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 256.0 / 139;
 
     // stack layers to build network
     std::vector<LayerInterface*> layers {};
@@ -80,7 +80,7 @@ int main() {
     // optimizer
     Adam adam {};
     adam.init(layers);
-    adam.alpha = 0.01;
+    adam.alpha = 0.001;
     adam.beta1 = 0.95;
     adam.beta2 = 0.999;
 
@@ -136,7 +136,7 @@ int main() {
         std::cout << std::endl;
 
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
-        quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
+        quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 256);
 
         if (epoch % 300 == 0)
             adam.alpha *= 0.1;
