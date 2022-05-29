@@ -22,7 +22,7 @@ struct CSVWriter {
 
     void write(std::initializer_list<std::string> args){
         for(auto h:args){
-            csv_file << h << ",";
+            csv_file << "\"" << h << "\"" << ",";
         }
         csv_file <<"\n" << std::flush;
     }
