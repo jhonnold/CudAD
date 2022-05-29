@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/.../";
+std::string output = "./resources/runs/exp1/";
 
 int main() {
     init();
@@ -64,7 +64,7 @@ int main() {
     l1.lasso_regularization = 1.0 / 8388608.0;
 
     DenseLayer<H * 2, O, Sigmoid>   l2 {};
-    dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 1.0 / 139;
+    dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 512.0 / 174;
 
     // stack layers to build network
     std::vector<LayerInterface*> layers {};
@@ -80,7 +80,7 @@ int main() {
     // optimizer
     Adam adam {};
     adam.init(layers);
-    adam.alpha = 0.015;
+    adam.alpha = 0.01;
     adam.beta1 = 0.95;
     adam.beta2 = 0.999;
 
@@ -138,7 +138,8 @@ int main() {
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
         quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
 
-        adam.alpha *= 0.992;
+        if (epoch % 75 == 0)
+            adam.alpha *= 0.3;
     }
 
     close();
