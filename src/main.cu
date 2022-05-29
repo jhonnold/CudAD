@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/.../";
+std::string output = "./resources/runs/exp3/";
 
 int main() {
     init();
@@ -41,7 +41,7 @@ int main() {
     constexpr uint32_t       O = 1;
     constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
-    constexpr  int32_t       E = 600;
+    constexpr  int32_t       E = 1000;
 
     // Load files
     std::vector<std::string> files {};
@@ -61,7 +61,7 @@ int main() {
 
     // 1536 -> (2x512) -> 1
     DuplicateDenseLayer<I, H, ReLU> l1 {};
-    l1.lasso_regularization = 1.0 / 8388608.0;
+    l1.lasso_regularization = 1.0 / 8388608.0 / B;
 
     DenseLayer<H * 2, O, Sigmoid>   l2 {};
     dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 1.0 / 139;
@@ -74,7 +74,7 @@ int main() {
     Network network {layers};
 
     // loss function
-    MPE     loss_function {2.5, false};
+    MPE     loss_function {2.5};
     network.setLossFunction(&loss_function);
 
     // optimizer
@@ -138,7 +138,8 @@ int main() {
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
         quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
 
-        adam.alpha *= 0.992;
+        if (epoch % 300 == 0)
+            adam.alpha *= 0.1;
     }
 
     close();
