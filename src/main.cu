@@ -30,16 +30,16 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/exp8/";
+std::string output = "./resources/runs/exp9/";
 
 int main() {
     init();
 
     // definitions
     constexpr uint32_t       I = 8 * 12 * 64;
-    constexpr uint32_t      L1 = 512;
+    constexpr uint32_t      L1 = 256;
     constexpr uint32_t      L2 = 32;
-    constexpr uint32_t      L3 = 32;  
+    constexpr uint32_t      L3 = 32;
     constexpr uint32_t       O = 1;
     constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
@@ -63,7 +63,7 @@ int main() {
 
     const float QUANT_ONE = 127.0;
     DuplicateDenseLayer<I, L1, ClippedReLU> l1 {};
-    l1.lasso_regularization = 1.0 / 8388608.0;
+    // l1.lasso_regularization = 1.0 / 8.0 / 1024.0 / 1024.0;
     dynamic_cast<ClippedReLU*>(l1.getActivationFunction())->max = 1.0;
 
     const float SCALE_HIDDEN = 64.0;
