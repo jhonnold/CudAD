@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/exp7/";
+std::string output = "./resources/runs/exp8/";
 
 int main() {
     init();
@@ -63,7 +63,7 @@ int main() {
 
     const float QUANT_ONE = 127.0;
     DuplicateDenseLayer<I, L1, ClippedReLU> l1 {};
-    // l1.lasso_regularization = 1.0 / 8388608.0;
+    l1.lasso_regularization = 1.0 / 8388608.0;
     dynamic_cast<ClippedReLU*>(l1.getActivationFunction())->max = 1.0;
 
     const float SCALE_HIDDEN = 64.0;
