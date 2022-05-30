@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/exp6/";
+std::string output = "./resources/runs/exp7/";
 
 int main() {
     init();
@@ -41,7 +41,7 @@ int main() {
     constexpr uint32_t      L2 = 32;
     constexpr uint32_t      L3 = 32;  
     constexpr uint32_t       O = 1;
-    constexpr uint32_t       B = 8192;
+    constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
     constexpr  int32_t       E = 600;
 
@@ -63,6 +63,7 @@ int main() {
 
     const float QUANT_ONE = 127.0;
     DuplicateDenseLayer<I, L1, ClippedReLU> l1 {};
+    // l1.lasso_regularization = 1.0 / 8388608.0;
     dynamic_cast<ClippedReLU*>(l1.getActivationFunction())->max = 1.0;
 
     const float SCALE_HIDDEN = 64.0;
@@ -93,7 +94,7 @@ int main() {
     Network network {layers};
 
     // loss function
-    MPE     loss_function {2.5, true};
+    MPE     loss_function {2.5, false};
     network.setLossFunction(&loss_function);
 
     // optimizer
