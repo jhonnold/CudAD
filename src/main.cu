@@ -30,14 +30,14 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/exp5/";
+std::string output = "./resources/runs/exp6/";
 
 int main() {
     init();
 
     // definitions
     constexpr uint32_t       I = 8 * 12 * 64;
-    constexpr uint32_t      L1 = 384;
+    constexpr uint32_t      L1 = 512;
     constexpr uint32_t      L2 = 32;
     constexpr uint32_t      L3 = 32;  
     constexpr uint32_t       O = 1;
