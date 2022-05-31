@@ -81,7 +81,6 @@ void write_4(const std::string& path, Network& network) {
     FILE *f = fopen(path.c_str(), "wb");
 
     network.getLayers()[0]->getTunableParameters()[0]->values.gpu_download();
-    network.getLayers()[0]->getTunableParameters()[1]->values.gpu_download();
     network.getLayers()[1]->getTunableParameters()[0]->values.gpu_download();
     network.getLayers()[1]->getTunableParameters()[1]->values.gpu_download();
     network.getLayers()[2]->getTunableParameters()[0]->values.gpu_download();
@@ -89,16 +88,7 @@ void write_4(const std::string& path, Network& network) {
     network.getLayers()[3]->getTunableParameters()[0]->values.gpu_download();
     network.getLayers()[3]->getTunableParameters()[1]->values.gpu_download();
 
-    // writeLayer<int16_t, int16_t>(f, network.getLayers()[0]->getTunableParameters()[0], quant_one, quant_one, true);
-    // writeMatrix<int8_t>(f, network.getLayers()[1]->getTunableParameters()[0]->values, quant_hidden, false);
-    // writeMatrix<int32_t>(f, network.getLayers()[1]->getTunableParameters()[1]->values, quant_hidden * quant_one, false);
-    // writeMatrix<int8_t>(f, network.getLayers()[2]->getTunableParameters()[0]->values, quant_hidden, false);
-    // writeMatrix<int32_t>(f, network.getLayers()[2]->getTunableParameters()[1]->values, quant_hidden * quant_one, false);
-    // writeMatrix<int8_t>(f, network.getLayers()[3]->getTunableParameters()[0]->values, nn_scale * quant_out / quant_one, false);
-    // writeMatrix<int32_t>(f, network.getLayers()[3]->getTunableParameters()[1]->values, nn_scale * quant_out, false);
-
-    writeMatrix<float>(f, network.getLayers()[0]->getTunableParameters()[0]->values, 1, false);
-    writeMatrix<float>(f, network.getLayers()[0]->getTunableParameters()[1]->values, 1, false);
+    writeLayer<float, float>(f, network.getLayers()[0]->getTunableParameters()[0], 1, 1, true);
     writeMatrix<float>(f, network.getLayers()[1]->getTunableParameters()[0]->values, 1, false);
     writeMatrix<float>(f, network.getLayers()[1]->getTunableParameters()[1]->values, 1, false);
     writeMatrix<float>(f, network.getLayers()[2]->getTunableParameters()[0]->values, 1, false);

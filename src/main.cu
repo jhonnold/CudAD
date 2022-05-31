@@ -38,8 +38,8 @@ int main() {
     // definitions
     constexpr uint32_t       I = 8 * 12 * 64;
     constexpr uint32_t      L1 = 512;
-    constexpr uint32_t      L2 = 8;
-    constexpr uint32_t      L3 = 16;
+    constexpr uint32_t      L2 = 32;
+    constexpr uint32_t      L3 = 32;
     constexpr uint32_t       O = 1;
     constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
@@ -62,17 +62,10 @@ int main() {
     target_mask.malloc_gpu();
 
     DuplicateDenseLayer<I, L1, ReLU> l1 {};
-    l1.getTunableParameters()[0]->min_allowed_value = -16;
-    l1.getTunableParameters()[0]->max_allowed_value = 16;
-
     DenseLayer<2 * L1, L2, ReLU> l2 {};
-    l2.getTunableParameters()[0]->min_allowed_value = -127.0 / 64;
-    l2.getTunableParameters()[0]->max_allowed_value = 127.0 / 64;
-
     DenseLayer<L2, L3, ReLU> l3 {};
-
     DenseLayer<L3, O, Sigmoid> l4 {};
-    dynamic_cast<Sigmoid*>(l4.getActivationFunction())->scalar = 1.0 / 139;
+    dynamic_cast<Sigmoid*>(l4.getActivationFunction())->scalar = 1 / 139.0;
 
     // stack layers to build network
     std::vector<LayerInterface*> layers {};
@@ -146,8 +139,6 @@ int main() {
         std::cout << std::endl;
 
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
-
-        network.saveWeights(output + "weights-epoch" + std::to_string(epoch) + ".nnue");
         write_4(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network);
 
         if (epoch % 100 == 0)
