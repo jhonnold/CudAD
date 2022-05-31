@@ -30,16 +30,16 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/master/";
-std::string output = "./resources/runs/testing/";
+std::string output = "./resources/runs/exp11/";
 
 int main() {
     init();
     
     // definitions
     constexpr uint32_t       I = 8 * 12 * 64;
-    constexpr uint32_t      L1 = 256;
-    constexpr uint32_t      L2 = 32;
-    constexpr uint32_t      L3 = 32;
+    constexpr uint32_t      L1 = 512;
+    constexpr uint32_t      L2 = 8;
+    constexpr uint32_t      L3 = 16;
     constexpr uint32_t       O = 1;
     constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
@@ -61,28 +61,18 @@ int main() {
     target_mask.malloc_cpu();
     target_mask.malloc_gpu();
 
-    const float QUANT_ONE = 127.0;
-    DuplicateDenseLayer<I, L1, ClippedReLU> l1 {};
-    // l1.lasso_regularization = 1.0 / 8.0 / 1024.0 / 1024.0;
-    dynamic_cast<ClippedReLU*>(l1.getActivationFunction())->max = 1.0;
+    DuplicateDenseLayer<I, L1, ReLU> l1 {};
+    l1.getTunableParameters()[0]->min_allowed_value = -16;
+    l1.getTunableParameters()[0]->max_allowed_value = 16;
 
-    const float SCALE_HIDDEN = 64.0;
-    DenseLayer<2 * L1, L2, ClippedReLU> l2 {};
-    dynamic_cast<ClippedReLU*>(l2.getActivationFunction())->max = 1.0;
-    l2.getTunableParameters()[0]->min_allowed_value = -QUANT_ONE / SCALE_HIDDEN;
-    l2.getTunableParameters()[0]->max_allowed_value = QUANT_ONE / SCALE_HIDDEN;
+    DenseLayer<2 * L1, L2, ReLU> l2 {};
+    l2.getTunableParameters()[0]->min_allowed_value = -127.0 / 64;
+    l2.getTunableParameters()[0]->max_allowed_value = 127.0 / 64;
 
-    DenseLayer<L2, L3, ClippedReLU> l3 {};
-    dynamic_cast<ClippedReLU*>(l3.getActivationFunction())->max = 1.0;
-    l3.getTunableParameters()[0]->min_allowed_value = -QUANT_ONE / SCALE_HIDDEN;
-    l3.getTunableParameters()[0]->max_allowed_value = QUANT_ONE / SCALE_HIDDEN;
+    DenseLayer<L2, L3, ReLU> l3 {};
 
-    const float SCALE_OUT = 16.0;
-    const float NN_SCALE = 231.0;
     DenseLayer<L3, O, Sigmoid> l4 {};
-    dynamic_cast<Sigmoid*>(l4.getActivationFunction())->scalar = NN_SCALE / 139;
-    l4.getTunableParameters()[0]->min_allowed_value = -(QUANT_ONE * QUANT_ONE) / (SCALE_OUT * NN_SCALE);
-    l4.getTunableParameters()[0]->max_allowed_value = (QUANT_ONE * QUANT_ONE) / (SCALE_OUT * NN_SCALE);
+    dynamic_cast<Sigmoid*>(l4.getActivationFunction())->scalar = 1.0 / 139;
 
     // stack layers to build network
     std::vector<LayerInterface*> layers {};
@@ -103,7 +93,6 @@ int main() {
     adam.alpha = 0.01;
     adam.beta1 = 0.95;
     adam.beta2 = 0.999;
-    adam.eps = 1e-7;
 
     CSVWriter csv {output + "loss.csv"};
 
@@ -157,7 +146,9 @@ int main() {
         std::cout << std::endl;
 
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
-        quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
+
+        network.saveWeights(output + "weights-epoch" + std::to_string(epoch) + ".nnue");
+        write_4(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network);
 
         if (epoch % 100 == 0)
             adam.alpha *= 0.3;
