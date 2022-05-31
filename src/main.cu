@@ -30,14 +30,14 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/master/";
-std::string output = "./resources/runs/testing/";
+std::string output = "./resources/runs/exp12/";
 
 int main() {
     init();
     
     // definitions
     constexpr uint32_t       I = 8 * 12 * 64;
-    constexpr uint32_t       H = 512;
+    constexpr uint32_t       H = 768;
     constexpr uint32_t       O = 1;
     constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
@@ -59,7 +59,6 @@ int main() {
     target_mask.malloc_cpu();
     target_mask.malloc_gpu();
 
-    // 1536 -> (2x512) -> 1
     DuplicateDenseLayer<I, H, ReLU> l1 {};
     l1.lasso_regularization = 1.0 / 8388608.0;
 
