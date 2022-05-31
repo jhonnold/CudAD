@@ -29,12 +29,12 @@
 #include <filesystem>
 #include <iostream>
 
-const std::string data_path = "E:/berserk/training-data/berserk9dev2/finny-data/";
-std::string output = "./resources/runs/exp9/";
+const std::string data_path = "E:/berserk/training-data/master/";
+std::string output = "./resources/runs/testing/";
 
 int main() {
     init();
-
+    
     // definitions
     constexpr uint32_t       I = 8 * 12 * 64;
     constexpr uint32_t      L1 = 256;
@@ -47,7 +47,7 @@ int main() {
 
     // Load files
     std::vector<std::string> files {};
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 10; i++)
         files.push_back(data_path + "berserk9dev2.d9." + std::to_string(i) + ".bin");
 
     BatchLoader  batch_loader {files, B};
@@ -100,8 +100,8 @@ int main() {
     // optimizer
     Adam adam {};
     adam.init(layers);
-    adam.alpha = 0.001;
-    adam.beta1 = 0.9;
+    adam.alpha = 0.01;
+    adam.beta1 = 0.95;
     adam.beta2 = 0.999;
     adam.eps = 1e-7;
 
@@ -157,8 +157,8 @@ int main() {
         std::cout << std::endl;
 
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
-        write_4(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, QUANT_ONE, SCALE_HIDDEN, SCALE_OUT, NN_SCALE);
-        
+        quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
+
         if (epoch % 100 == 0)
             adam.alpha *= 0.3;
     }
