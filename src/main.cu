@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/master/";
-std::string output = "./resources/runs/exp13/";
+std::string output = "./resources/runs/exp14/";
 
 int main() {
     init();
@@ -41,7 +41,7 @@ int main() {
     constexpr uint32_t       O = 1;
     constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
-    constexpr  int32_t       E = 600;
+    constexpr  int32_t       E = 450;
 
     // Load files
     std::vector<std::string> files {};
@@ -138,8 +138,8 @@ int main() {
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
         quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
 
-        if (epoch % 100 == 0)
-            adam.alpha *= 0.3;
+        if (epoch % 200 == 0)
+            adam.alpha *= 0.1;
     }
 
     close();
