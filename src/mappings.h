@@ -300,7 +300,8 @@ inline void assign_input(Position&      p,
                          SparseInput&   in2,
                          SArray<float>& output,
                          SArray<bool>&  output_mask,
-                         int            id) {
+                         int            id, 
+                         float lambda) {
 
     // track king squares
     Square                 wKingSq = p.getKingSquare<WHITE>();
@@ -340,7 +341,7 @@ inline void assign_input(Position&      p,
     float p_target      = 1 / (1 + expf(-p_value / 139.0));
     float w_target      = (w_value + 1) / 2.0f;
 
-    output(id)          = (p_target + w_target) / 2;
+    output(id)          = lambda * p_target + (1.0 - lambda) * w_target;
     output_mask(id)     = true;
 }
 
@@ -348,7 +349,8 @@ inline void assign_inputs_batch(DataSet&       positions,
                                 SparseInput&   in1,
                                 SparseInput&   in2,
                                 SArray<float>& output,
-                                SArray<bool>&  output_mask) {
+                                SArray<bool>&  output_mask,
+                                float lambda) {
 
     ASSERT(positions.positions.size() == in1.n);
     ASSERT(positions.positions.size() == in2.n);
@@ -357,9 +359,9 @@ inline void assign_inputs_batch(DataSet&       positions,
     in2.clear();
     output_mask.clear();
 
-#pragma omp parallel for schedule(static) num_threads(4)
+#pragma omp parallel for schedule(static) num_threads(8)
     for (int i = 0; i < positions.positions.size(); i++) {
-        assign_input(positions.positions[i], in1,in2, output, output_mask, i);
+        assign_input(positions.positions[i], in1,in2, output, output_mask, i, lambda);
     }
 }
 }    // namespace dense_berky

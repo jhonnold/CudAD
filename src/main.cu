@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/master/";
-std::string output = "./resources/runs/exp13/";
+std::string output = "./resources/runs/exp15/";
 
 int main() {
     init();
@@ -41,7 +41,7 @@ int main() {
     constexpr uint32_t       O = 1;
     constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
-    constexpr  int32_t       E = 600;
+    constexpr  int32_t       E = 350;
 
     // Load files
     std::vector<std::string> files {};
@@ -49,97 +49,107 @@ int main() {
         files.push_back(data_path + "berserk9dev2.d9." + std::to_string(i) + ".bin");
 
     BatchLoader  batch_loader {files, B};
+    
+    int run = 0;
+    for (float lambda = 1.0; lambda >= 0.0; lambda -= 0.1, run++) {
+        if (lambda == 0.5f)
+            continue;
 
-    // Input data (perspective)
-    SparseInput  i0 {I, B, 32};    // 32 max inputs
-    SparseInput  i1 {I, B, 32};
+        std::string save_folder = output + "run" + std::to_string(run) + "/";
 
-    DenseMatrix  target {O, B};
-    SArray<bool> target_mask {O * B};
-    target_mask.malloc_cpu();
-    target_mask.malloc_gpu();
+        // Input data (perspective)
+        SparseInput  i0 {I, B, 32};    // 32 max inputs
+        SparseInput  i1 {I, B, 32};
 
-    // 1536 -> (2x512) -> 1
-    DuplicateDenseLayer<I, H, ReLU> l1 {};
-    l1.lasso_regularization = 1.0 / 8388608.0;
+        DenseMatrix  target {O, B};
+        SArray<bool> target_mask {O * B};
+        target_mask.malloc_cpu();
+        target_mask.malloc_gpu();
 
-    DenseLayer<H * 2, O, Sigmoid>   l2 {};
-    dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 1.0 / 139;
+        // 1536 -> (2x512) -> 1
+        DuplicateDenseLayer<I, H, ReLU> l1 {};
+        l1.lasso_regularization = 1.0 / 8388608.0;
 
-    // stack layers to build network
-    std::vector<LayerInterface*> layers {};
-    layers.push_back(&l1);
-    layers.push_back(&l2);
+        DenseLayer<H * 2, O, Sigmoid>   l2 {};
+        dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 1.0 / 139;
 
-    Network network {layers};
+        // stack layers to build network
+        std::vector<LayerInterface*> layers {};
+        layers.push_back(&l1);
+        layers.push_back(&l2);
 
-    // loss function
-    MPE     loss_function {2.5, false};
-    network.setLossFunction(&loss_function);
+        Network network {layers};
 
-    // optimizer
-    Adam adam {};
-    adam.init(layers);
-    adam.alpha = 0.01;
-    adam.beta1 = 0.95;
-    adam.beta2 = 0.999;
+        // loss function
+        MPE     loss_function {2.5, false};
+        network.setLossFunction(&loss_function);
 
-    CSVWriter csv {output + "loss.csv"};
+        // optimizer
+        Adam adam {};
+        adam.init(layers);
+        adam.alpha = 0.01;
+        adam.beta1 = 0.95;
+        adam.beta2 = 0.999;
 
-    Timer t {};
-    for (int epoch = 1; epoch <= E; epoch++) {
-        float epoch_loss = 0;
-        long long prev_duration = 0;
+        CSVWriter csv {save_folder + "loss.csv"};
 
-        t.tick();
+        Timer t {};
+        for (int epoch = 1; epoch <= E; epoch++) {
+            float epoch_loss = 0;
+            long long prev_duration = 0;
 
-        for (int batch = 1; batch <= BPE; batch++) {
-            // get the next dataset (batch)
-            auto* ds = batch_loader.next();
-            // assign to the inputs and compute the target
-            dense_berky::assign_inputs_batch(*ds, i0, i1, target, target_mask);
-            // upload relevant data
-            i0.column_indices.gpu_upload();
-            i1.column_indices.gpu_upload();
-            target.gpu_upload();
-            target_mask.gpu_upload();
+            t.tick();
 
-            // download the loss to display the loss of the iteration
-            loss_function.loss.gpu_download();
+            for (int batch = 1; batch <= BPE; batch++) {
+                // get the next dataset (batch)
+                auto* ds = batch_loader.next();
+                // assign to the inputs and compute the target
+                dense_berky::assign_inputs_batch(*ds, i0, i1, target, target_mask, lambda);
+                // upload relevant data
+                i0.column_indices.gpu_upload();
+                i1.column_indices.gpu_upload();
+                target.gpu_upload();
+                target_mask.gpu_upload();
 
-            // measure time and print output
-            t.tock();
-            if (batch == BPE || t.duration() - prev_duration > 1000) {
-                prev_duration = t.duration();
+                // download the loss to display the loss of the iteration
+                loss_function.loss.gpu_download();
 
-                std::printf("\rep/ba = [%3d/%5d], ", epoch, batch + 1);
-                std::printf("batch_loss = [%1.8f], ", loss_function.loss(0));
-                std::printf("epoch_loss = [%1.8f], ", epoch_loss / (batch + 1));
-                std::printf("speed = [%9d pos/s], ", (int) std::round(1000.0f * B * (batch + 1) / t.duration()));
-                std::printf("time = [%3ds]", (int) t.duration() / 1000);
-                std::cout << std::flush;
+                // measure time and print output
+                t.tock();
+                if (batch == BPE || t.duration() - prev_duration > 1000) {
+                    prev_duration = t.duration();
+
+                    std::printf("\rep/ba = [%3d/%5d], ", epoch, batch + 1);
+                    std::printf("batch_loss = [%1.8f], ", loss_function.loss(0));
+                    std::printf("epoch_loss = [%1.8f], ", epoch_loss / (batch + 1));
+                    std::printf("speed = [%9d pos/s], ", (int) std::round(1000.0f * B * (batch + 1) / t.duration()));
+                    std::printf("time = [%3ds]", (int) t.duration() / 1000);
+                    std::cout << std::flush;
+                }
+
+                epoch_loss += loss_function.loss(0);
+                // make sure to reset the loss here since the mse increments the loss in order to not have
+                // to use memcpy (might change soon)
+                loss_function.loss(0) = 0;
+                loss_function.loss.gpu_upload();
+
+                // feed forward
+                network.batch(std::vector<SparseInput*> {&i0, &i1}, target, target_mask);
+
+                // update weights
+                adam.apply(1);
             }
 
-            epoch_loss += loss_function.loss(0);
-            // make sure to reset the loss here since the mse increments the loss in order to not have
-            // to use memcpy (might change soon)
-            loss_function.loss(0) = 0;
-            loss_function.loss.gpu_upload();
+            std::cout << std::endl;
 
-            // feed forward
-            network.batch(std::vector<SparseInput*> {&i0, &i1}, target, target_mask);
+            csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
 
-            // update weights
-            adam.apply(1);
+            if (epoch % 10 == 0)
+                quantitize(save_folder + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
+
+            if (epoch % 100 == 0)
+                adam.alpha *= 0.3;
         }
-
-        std::cout << std::endl;
-
-        csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE)});
-        quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
-
-        if (epoch % 100 == 0)
-            adam.alpha *= 0.3;
     }
 
     close();
