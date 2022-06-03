@@ -89,6 +89,20 @@ void quantitize(const std::string& path, Network& network, float scalar_1 = 16, 
     fclose(f);
 }
 
+void write_3(const std::string& path, Network& network) {
+    FILE *f = fopen(path.c_str(), "wb");
+
+    network.getLayers()[0]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[1]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[2]->getTunableParameters()[0]->values.gpu_download();
+
+    writeLayer<float, float>(f, network.getLayers()[0]->getTunableParameters()[0], 1, 1, true);
+    writeLayer<float, float>(f, network.getLayers()[1]->getTunableParameters()[0], 1, 1, false);
+    writeLayer<float, float>(f, network.getLayers()[2]->getTunableParameters()[0], 1, 1, false);
+
+    fclose(f);
+}
+
 void computeScalars(BatchLoader& batch_loader, Network& network, int batches, uint32_t input_size){
 
     SparseInput sparse_input_1{input_size, (uint32_t) batch_loader.batch_size, 32};
@@ -142,11 +156,20 @@ void computeScalars(BatchLoader& batch_loader, Network& network, int batches, ui
 
     for(int i = 0; i < maximum.size(); i++){
 //        std::cout << minimum[i] << "\n" << maximum[i] << std::endl;
+
+        int died = 0;
+        for(int j = 0; j < minimum[i].size; j++){
+            if(abs(maximum[i].get(j) - minimum[i].get(j)) < 1e-8){
+                died ++;
+            }
+        }
+
         std::cout << "layer  : " << i << std::endl;
         std::cout << "min    : " << std::left << std::setw(10) << minimum[i].min()
                   << "max    : " << std::left << std::setw(10) << maximum[i].max()
                   << "min wgt: " << std::left << std::setw(10) << minimum_wgt[i]
-                  << "max wgt: " << std::left << std::setw(10) << maximum_wgt[i] << std::endl;
+                  << "max wgt: " << std::left << std::setw(10) << maximum_wgt[i]
+                  << "died   : " << std::left << std::setw(10) << died * 100 / minimum[i].size << " %" << std::endl;
     }
 }
 

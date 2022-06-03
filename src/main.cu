@@ -30,7 +30,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/n5k/";
-std::string output = "./resources/runs/testing/";
+std::string output = "./resources/runs/exp18/";
 
 float validate(Network&     network,
                DataSet&     data_set,
@@ -45,6 +45,7 @@ int main() {
     // definitions
     constexpr uint32_t       I = 8 * 12 * 64;
     constexpr uint32_t       H = 512;
+    constexpr uint32_t      L2 = 8;
     constexpr uint32_t       O = 1;
     constexpr uint32_t       B = 16384;
     constexpr uint32_t     BPE = 100000000 / B;
@@ -71,13 +72,16 @@ int main() {
     DuplicateDenseLayer<I, H, ReLU> l1 {};
     l1.lasso_regularization = 1.0 / 8388608.0;
 
-    DenseLayer<H * 2, O, Sigmoid>   l2 {};
-    dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 1.0 / 139;
+    DenseLayer<H * 2, L2, ReLU> l2 {};
+
+    DenseLayer<L2, O, Sigmoid>   l3 {};
+    dynamic_cast<Sigmoid*>(l3.getActivationFunction())->scalar = 1.0 / 139;
 
     // stack layers to build network
     std::vector<LayerInterface*> layers {};
     layers.push_back(&l1);
     layers.push_back(&l2);
+    layers.push_back(&l3);
 
     Network network {layers};
 
@@ -153,8 +157,10 @@ int main() {
 
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE), std::to_string(validation_loss)});
 
+        // computeScalars(batch_loader, network, 128, I);
+
         if (epoch % 10 == 0)
-            quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
+            write_3(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network);
 
         if (epoch % 100 == 0)
             adam.alpha *= 0.3;
