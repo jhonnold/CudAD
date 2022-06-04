@@ -77,6 +77,18 @@ void writeLayer(FILE* file, Tape* tunable_values, float wgt_scaling, float bia_s
     writeMatrix<bia_type>(file, bia, bia_scaling);
 }
 
+void quantitize_f(const std::string& path, Network& network) {
+    FILE *f = fopen(path.c_str(), "wb");
+
+    network.getLayers()[0]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[1]->getTunableParameters()[0]->values.gpu_download();
+
+    writeLayer<float, float>(f, network.getLayers()[0]->getTunableParameters()[0], 1, 1, true);
+    writeLayer<float, float>(f, network.getLayers()[1]->getTunableParameters()[0], 1, 1, false);
+
+    fclose(f);
+}
+
 void quantitize(const std::string& path, Network& network, float scalar_1 = 16, float scalar_2 = 512) {
     FILE *f = fopen(path.c_str(), "wb");
 
@@ -89,8 +101,21 @@ void quantitize(const std::string& path, Network& network, float scalar_1 = 16, 
     fclose(f);
 }
 
-void computeScalars(BatchLoader& batch_loader, Network& network, int batches, uint32_t input_size){
+void write_3(const std::string& path, Network& network) {
+    FILE *f = fopen(path.c_str(), "wb");
 
+    network.getLayers()[0]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[1]->getTunableParameters()[0]->values.gpu_download();
+    network.getLayers()[2]->getTunableParameters()[0]->values.gpu_download();
+
+    writeLayer<float, float>(f, network.getLayers()[0]->getTunableParameters()[0], 1, 1, true);
+    writeLayer<float, float>(f, network.getLayers()[1]->getTunableParameters()[0], 1, 1, false);
+    writeLayer<float, float>(f, network.getLayers()[2]->getTunableParameters()[0], 1, 1, false);
+
+    fclose(f);
+}
+
+void computeScalars(BatchLoader& batch_loader, Network& network, int batches, uint32_t input_size) {
     SparseInput sparse_input_1{input_size, (uint32_t) batch_loader.batch_size, 32};
     SparseInput sparse_input_2{input_size, (uint32_t) batch_loader.batch_size, 32};
     SArray<float> target{(uint32_t) batch_loader.batch_size};
@@ -124,8 +149,6 @@ void computeScalars(BatchLoader& batch_loader, Network& network, int batches, ui
         target_mask                   .gpu_upload();
         network.feed(std::vector<SparseInput*>{&sparse_input_1, &sparse_input_2});
 
-        std::cout << "\rProcessing batch: " << (batch + 1) << "/" << batches << std::flush;
-
         // iterate over the layers
         for(int i = 0; i < maximum.size(); i++){
 
@@ -138,15 +161,16 @@ void computeScalars(BatchLoader& batch_loader, Network& network, int batches, ui
             }
         }
     }
-    std::cout << std::endl;
 
     for(int i = 0; i < maximum.size(); i++){
-//        std::cout << minimum[i] << "\n" << maximum[i] << std::endl;
-        std::cout << "layer  : " << i << std::endl;
-        std::cout << "min    : " << std::left << std::setw(10) << minimum[i].min()
-                  << "max    : " << std::left << std::setw(10) << maximum[i].max()
-                  << "min wgt: " << std::left << std::setw(10) << minimum_wgt[i]
-                  << "max wgt: " << std::left << std::setw(10) << maximum_wgt[i] << std::endl;
+        int died = 0;
+        for(int j = 0; j < minimum[i].size; j++) 
+            if (abs(maximum[i].get(j) - minimum[i].get(j)) < 1e-8)
+                died++;
+
+        std::printf("layer: %d, min: %+1.4f, max: %+1.4f, min_wgt: %+1.4f, max_wgt: %+1.4f, dead: %d", 
+            i, minimum[i].min(), maximum[i].max(), minimum_wgt[i], maximum_wgt[i], died);
+        std::cout << std::endl;
     }
 }
 

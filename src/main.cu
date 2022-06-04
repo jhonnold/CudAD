@@ -23,6 +23,7 @@
 #include "operations/operations.h"
 #include "optimizer/Adam.h"
 #include "optimizer/RAdam.h"
+#include "optimizer/Ranger.h"
 #include "position/fenparsing.h"
 #include "position/position.h"
 #include "quantitize.h"
@@ -31,7 +32,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/n5k/";
-std::string output = "./resources/runs/exp20/";
+std::string output = "./resources/runs/exp21/";
 
 float validate(Network&     network,
                DataSet&     data_set,
@@ -71,7 +72,7 @@ int main() {
     DuplicateDenseLayer<I, H, ReLU> l1 {};
     l1.lasso_regularization = 1.0 / 8388608.0;
 
-    DenseLayer<H * 2, O, Sigmoid>   l2 {};
+    DenseLayer<2 * H, O, Sigmoid>   l2 {};
     dynamic_cast<Sigmoid*>(l2.getActivationFunction())->scalar = 1.0 / 139;
 
     // stack layers to build network
@@ -86,10 +87,12 @@ int main() {
     network.setLossFunction(&loss_function);
 
     // optimizer
-    RAdam adam {};
-    adam.init(layers);
-    adam.lr = 1e-2;
-    adam.beta1 = 0.95;
+    Ranger optim {};
+    optim.init(layers);
+    optim.lr             = 1e-2;
+    optim.beta1          = 0.9;
+    optim.beta2          = 0.999;
+    optim.eps            = 1e-7;
 
     CSVWriter csv {output + "loss.csv"};
     csv.write({"epoch", "training_loss", "validation_loss"});
@@ -138,7 +141,7 @@ int main() {
             network.batch(std::vector<SparseInput*> {&i0, &i1}, target, target_mask);
 
             // update weights
-            adam.apply(1);
+            optim.apply(1);
         }
 
         float validation_loss = validate(network, validation, target, target_mask, i0, i1);
@@ -153,10 +156,10 @@ int main() {
         csv.write({std::to_string(epoch),  std::to_string(epoch_loss / BPE), std::to_string(validation_loss)});
 
         if (epoch % 10 == 0)
-            quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
+            quantitize_f(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network);
 
         if (epoch % 100 == 0)
-            adam.lr *= 0.3;
+            optim.lr *= 0.3;
     }
 
     close();
