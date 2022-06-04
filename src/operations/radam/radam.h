@@ -15,7 +15,8 @@ __global__ void radam_kernel(
           float lr,
           float beta1,
           float beta2,
-          float eps);
+          float eps,
+          int N_sma_threshold);
 
 void radam_host(
           float* values,
@@ -27,7 +28,8 @@ void radam_host(
           float lr,
           float beta1,
           float beta2,
-          float eps);
+          float eps,
+          int N_sma_threshold);
 
 template<Mode mode>
 inline void radam(SArray<float>& values,
@@ -38,7 +40,8 @@ inline void radam(SArray<float>& values,
                   float lr,
                   float beta1,
                   float beta2,
-                  float eps) {
+                  float eps,
+                  int N_sma_threshold) {
     constexpr int block_size = 1024;
 
     ASSERT(values.size == gradients.size)
@@ -54,7 +57,7 @@ inline void radam(SArray<float>& values,
             first_moment    .gpu_values,
             second_moment   .gpu_values,
             values.size,
-            step, lr, beta1, beta2, eps);
+            step, lr, beta1, beta2, eps, N_sma_threshold);
     } else {
         radam_host(
             values          .cpu_values,
@@ -62,7 +65,7 @@ inline void radam(SArray<float>& values,
             first_moment    .cpu_values,
             second_moment   .cpu_values,
             values.size,
-            step, lr, beta1, beta2, eps);
+            step, lr, beta1, beta2, eps, N_sma_threshold);
     }
 }
 

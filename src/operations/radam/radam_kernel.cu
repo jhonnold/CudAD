@@ -10,7 +10,8 @@ __global__ void radam_kernel(
           float lr,
           float beta1,
           float beta2,
-          float eps) {
+          float eps,
+          int   N_sma_threshold) {
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(idx >= size) return;
@@ -24,7 +25,7 @@ __global__ void radam_kernel(
     float N_sma_max = 2.0 / (1.0 - beta2) - 1.0;
     float N_sma = N_sma_max - 2 * step * beta2_t / (1.0 - beta2_t);
 
-    if (N_sma >= 5) {
+    if (N_sma >= N_sma_threshold) {
         float step_size = lr * sqrtf(
             (1.0 - beta2_t) * 
             (N_sma - 4.0) / (N_sma_max - 4.0) * 
@@ -34,6 +35,11 @@ __global__ void radam_kernel(
 
         float denom = sqrtf(exp_avg_sq[idx]) + eps;
         float delta = step_size * exp_avg[idx] / denom;
+
+        values[idx] -= delta;
+    } else {
+        float step_size = lr * (1.0 - powf(beta1, step));
+        float delta = step_size * exp_avg[idx];
 
         values[idx] -= delta;
     }

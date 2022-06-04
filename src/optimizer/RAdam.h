@@ -14,10 +14,11 @@ struct RAdam : Optimiser {
         std::vector<std::tuple<float, float>> value_ranges {};
 
     public:
-        double lr    = 1e-3;
-        double beta1 = 0.9;
-        double beta2 = 0.999;
-        double eps   = 1e-8;
+        double lr              = 1e-3;
+        double beta1           = 0.9;
+        double beta2           = 0.999;
+        double eps             = 1e-8;
+        int    N_sma_threshold = 5;
     
     virtual void createBuffers() {
         for (Tape* t: tunable_values) {
@@ -39,7 +40,7 @@ struct RAdam : Optimiser {
                           tunable_values[i]->gradients,
                           exp_avg[i],
                           exp_avg_sq[i],
-                          step, lr, beta1, beta2, eps);
+                          step, lr, beta1, beta2, eps, N_sma_threshold);
             
             auto range = value_ranges[i];
             auto min = std::get<0>(range);
