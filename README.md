@@ -23,7 +23,7 @@ cd CudAD
 
 ```bash
 cmake -B cmake-build-release -S .
-cmake -B cmake-build-release --config Release --target CudAD -j4
+cmake --build cmake-build-release --config Release --target CudAD -j4
 ```
 ### Run
 

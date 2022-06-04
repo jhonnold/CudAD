@@ -22,6 +22,7 @@
 #include "network/Network.h"
 #include "operations/operations.h"
 #include "optimizer/Adam.h"
+#include "optimizer/RAdam.h"
 #include "position/fenparsing.h"
 #include "position/position.h"
 #include "quantitize.h"
@@ -30,7 +31,7 @@
 #include <iostream>
 
 const std::string data_path = "E:/berserk/training-data/n5k/";
-std::string output = "./resources/runs/testing/";
+std::string output = "./resources/runs/exp20/";
 
 float validate(Network&     network,
                DataSet&     data_set,
@@ -67,7 +68,6 @@ int main() {
     target_mask.malloc_cpu();
     target_mask.malloc_gpu();
 
-    // 1536 -> (2x512) -> 1
     DuplicateDenseLayer<I, H, ReLU> l1 {};
     l1.lasso_regularization = 1.0 / 8388608.0;
 
@@ -86,11 +86,10 @@ int main() {
     network.setLossFunction(&loss_function);
 
     // optimizer
-    Adam adam {};
+    RAdam adam {};
     adam.init(layers);
-    adam.alpha = 0.01;
+    adam.lr = 1e-2;
     adam.beta1 = 0.95;
-    adam.beta2 = 0.999;
 
     CSVWriter csv {output + "loss.csv"};
     csv.write({"epoch", "training_loss", "validation_loss"});
@@ -157,7 +156,7 @@ int main() {
             quantitize(output + "nn-epoch" + std::to_string(epoch) + ".nnue", network, 16, 512);
 
         if (epoch % 100 == 0)
-            adam.alpha *= 0.3;
+            adam.lr *= 0.3;
     }
 
     close();
