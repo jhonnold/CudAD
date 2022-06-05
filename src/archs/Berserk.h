@@ -37,7 +37,7 @@
 class Berserk {
 
     public:
-    static constexpr int   Inputs        = 8 * 12 * 64;
+    static constexpr int   Inputs        = 32 * 12 * 64;
     static constexpr int   L2            = 512;
     static constexpr int   L3            = 8;
     static constexpr int   L4            = 16;
@@ -45,12 +45,12 @@ class Berserk {
     static constexpr float SigmoidScalar = 1.0 / 139;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.95;
-        optim->beta2 = 0.999;
+             Adam* optim  = new Adam();
+             optim->lr    = 1e-2;
+             optim->beta1 = 0.95;
+             optim->beta2 = 0.999;
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -64,13 +64,13 @@ class Berserk {
         l1->getTunableParameters()[0]->min_allowed_value = -32;
         l1->getTunableParameters()[0]->max_allowed_value = 32;
 
-        DenseLayer<2 * L2, L3, ReLU>* l2 = new DenseLayer<2 * L2, L3, ReLU>();
+        DenseLayer<2 * L2, L3, ReLU>* l2                 = new DenseLayer<2 * L2, L3, ReLU>();
         l2->getTunableParameters()[0]->min_allowed_value = -127.0 / 32;
         l2->getTunableParameters()[0]->max_allowed_value = 127.0 / 32;
 
-        DenseLayer<L3, L4, ReLU>* l3 = new DenseLayer<L3, L4, ReLU>();
+        DenseLayer<L3, L4, ReLU>*         l3             = new DenseLayer<L3, L4, ReLU>();
 
-        DenseLayer<L4, Outputs, Sigmoid>* l4  = new DenseLayer<L4, Outputs, Sigmoid>();
+        DenseLayer<L4, Outputs, Sigmoid>* l4             = new DenseLayer<L4, Outputs, Sigmoid>();
         dynamic_cast<Sigmoid*>(l4->getActivationFunction())->scalar = SigmoidScalar;
 
         return std::vector<LayerInterface*> {l1, l2, l3, l4};
@@ -92,14 +92,14 @@ class Berserk {
 
     static int king_square_index(int relative_king_square) {
         constexpr int indices[N_SQUARES] {
-            -1, -1, -1, -1, 7, 7, 7, 7,    //
-            -1, -1, -1, -1, 7, 7, 7, 7,    //
-            -1, -1, -1, -1, 6, 6, 6, 6,    //
-            -1, -1, -1, -1, 6, 6, 6, 6,    //
-            -1, -1, -1, -1, 4, 4, 5, 5,    //
-            -1, -1, -1, -1, 4, 4, 5, 5,    //
-            -1, -1, -1, -1, 0, 1, 2, 3,    //
-            -1, -1, -1, -1, 0, 1, 2, 3,    //
+            -1, -1, -1, -1, 28, 29, 30, 31,    //
+            -1, -1, -1, -1, 24, 25, 26, 27,    //
+            -1, -1, -1, -1, 20, 21, 22, 23,    //
+            -1, -1, -1, -1, 16, 17, 18, 19,    //
+            -1, -1, -1, -1, 12, 13, 14, 15,    //
+            -1, -1, -1, -1, 8,  9,  10, 11,    //
+            -1, -1, -1, -1, 4,  5,  6,  7,     //
+            -1, -1, -1, -1, 0,  1,  2,  3,     //
         };
 
         return indices[relative_king_square];
