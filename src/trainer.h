@@ -37,7 +37,7 @@ using namespace std;
 
 template<class Arch, int Epochs = 450, int BatchSize = 16384, int SamplesPerEpoch = 100000000>
 class Trainer {
-    static constexpr int MaxInputs       = 32;
+    static constexpr int MaxInputs       = Arch::MaxInputs;
     static constexpr int BatchesPerEpoch = SamplesPerEpoch / BatchSize;
 
     public:
@@ -99,7 +99,7 @@ class Trainer {
                        std::to_string(validation_loss)});
 
             if (epoch % 10 == 0) {
-                quantitize_shallow(output + "nn-epoch" + std::to_string(epoch) + ".nnue", *network);
+                quantitize_shallow<Arch>(output + "nn-epoch" + std::to_string(epoch) + ".nnue", *network);
                 network->saveWeights(output + "weights-epoch" + std::to_string(epoch) + ".nnue");
             }
 

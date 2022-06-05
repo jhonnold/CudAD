@@ -80,6 +80,7 @@ void writeMatrix(FILE* file, DenseMatrix& matrix, float scaling, bool column_maj
     fwrite(data.cpu_values, sizeof(type), data.size, file);
 }
 
+template<class Arch>
 void quantitize_shallow(const std::string& path,
                         Network&           network,
                         float              scalar_1 = 16,
@@ -90,9 +91,18 @@ void quantitize_shallow(const std::string& path,
     auto  l0_params  = l0->getTunableParameters();
     auto  l0_weights = l0_params[0]->values;
     auto  l0_biases  = l0_params[1]->values;
-
     l0_weights.gpu_download(), l0_biases.gpu_download();
-    writeMatrix<int16_t>(f, l0_weights, scalar_1, true);
+
+    for (int real_feature = 0; real_feature < Arch::RealInputs; real_feature++) {
+        int virtual_ft = Arch::virtual_feature_for(real_feature);
+
+        for (int o = 0; o < Arch::L2; o++)
+            l0_weights(o, real_feature) += l0_weights(o, virtual_ft);
+    }
+
+    DenseMatrix l0_real_weights {l0_weights, 0, 0, Arch::L2, Arch::RealInputs};
+
+    writeMatrix<int16_t>(f, l0_real_weights, scalar_1, true);
     writeMatrix<int16_t>(f, l0_biases, scalar_1);
 
     auto l1         = network.getLayers()[1];

@@ -37,18 +37,23 @@
 class Berserk {
 
     public:
-    static constexpr int   Inputs        = 8 * 12 * 64;
-    static constexpr int   L2            = 512;
-    static constexpr int   Outputs       = 1;
-    static constexpr float SigmoidScalar = 1.0 / 139;
+    static constexpr int   MaxRealInputs    = 32;
+    static constexpr int   MaxVirutalInputs = 32;
+    static constexpr int   MaxInputs        = MaxRealInputs + MaxVirutalInputs;
+    static constexpr int   RealInputs       = 8 * 12 * 64;
+    static constexpr int   VirtualInputs    = 12 * 64;
+    static constexpr int   Inputs           = RealInputs + VirtualInputs;
+    static constexpr int   L2               = 512;
+    static constexpr int   Outputs          = 1;
+    static constexpr float SigmoidScalar    = 1.0 / 139;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.95;
-        optim->beta2 = 0.999;
+             Adam* optim  = new Adam();
+             optim->lr    = 1e-2;
+             optim->beta1 = 0.95;
+             optim->beta2 = 0.999;
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -81,24 +86,20 @@ class Berserk {
             assign_input(positions.positions[i], i0, i1, output, output_mask, i);
     }
 
-    static int king_square_index(int relative_king_square) {
-        constexpr int indices[N_SQUARES] {
-            -1, -1, -1, -1, 7, 7, 7, 7,    //
-            -1, -1, -1, -1, 7, 7, 7, 7,    //
-            -1, -1, -1, -1, 6, 6, 6, 6,    //
-            -1, -1, -1, -1, 6, 6, 6, 6,    //
-            -1, -1, -1, -1, 4, 4, 5, 5,    //
-            -1, -1, -1, -1, 4, 4, 5, 5,    //
-            -1, -1, -1, -1, 0, 1, 2, 3,    //
-            -1, -1, -1, -1, 0, 1, 2, 3,    //
-        };
-
-        return indices[relative_king_square];
-    }
-
-    static int index(Square psq, Piece p, Square kingSquare, Color view) {
+    static int feature(Square psq, Piece p, Square kingSquare, Color view) {
         const PieceType pieceType  = getPieceType(p);
         const Color     pieceColor = getPieceColor(p);
+
+        constexpr int   king_buckets[N_SQUARES] {
+              -1, -1, -1, -1, 7, 7, 7, 7,    //
+              -1, -1, -1, -1, 7, 7, 7, 7,    //
+              -1, -1, -1, -1, 6, 6, 6, 6,    //
+              -1, -1, -1, -1, 6, 6, 6, 6,    //
+              -1, -1, -1, -1, 4, 4, 5, 5,    //
+              -1, -1, -1, -1, 4, 4, 5, 5,    //
+              -1, -1, -1, -1, 0, 1, 2, 3,    //
+              -1, -1, -1, -1, 0, 1, 2, 3,    //
+        };
 
         psq ^= 56;
         kingSquare ^= 56;
@@ -107,7 +108,11 @@ class Berserk {
         const int oK  = (7 * !(kingSquare & 4)) ^ (56 * view) ^ kingSquare;
         const int oSq = (7 * !(kingSquare & 4)) ^ (56 * view) ^ psq;
 
-        return king_square_index(oK) * 12 * 64 + oP * 64 + oSq;
+        return king_buckets[oK] * 12 * 64 + oP * 64 + oSq;
+    }
+
+    static int virtual_feature_for(int real_feature) {
+        return (real_feature % (12 * 64)) + RealInputs;
     }
 
     static void assign_input(Position&      p,
@@ -116,7 +121,6 @@ class Berserk {
                              SArray<float>& output,
                              SArray<bool>&  output_mask,
                              int            id) {
-
         // track king squares
         Square wKingSq = p.getKingSquare<WHITE>();
         Square bKingSq = p.getKingSquare<BLACK>();
@@ -125,18 +129,24 @@ class Berserk {
         int    idx = 0;
 
         while (bb) {
-            Square sq                    = bitscanForward(bb);
-            Piece  pc                    = p.m_pieces.getPiece(idx);
+            Square sq                = bitscanForward(bb);
+            Piece  pc                = p.m_pieces.getPiece(idx);
 
-            auto   piece_index_white_pov = index(sq, pc, wKingSq, WHITE);
-            auto   piece_index_black_pov = index(sq, pc, bKingSq, BLACK);
+            auto   real_feature_w    = feature(sq, pc, wKingSq, WHITE);
+            auto   real_feature_b    = feature(sq, pc, bKingSq, BLACK);
+            auto   virtual_feature_w = virtual_feature_for(real_feature_w);
+            auto   virtual_feature_b = virtual_feature_for(real_feature_b);
 
             if (p.m_meta.getActivePlayer() == WHITE) {
-                i0.set(id, piece_index_white_pov);
-                i1.set(id, piece_index_black_pov);
+                i0.set(id, real_feature_w);
+                i1.set(id, real_feature_b);
+                i0.set(id, virtual_feature_w);
+                i1.set(id, virtual_feature_b);
             } else {
-                i1.set(id, piece_index_white_pov);
-                i0.set(id, piece_index_black_pov);
+                i1.set(id, real_feature_w);
+                i0.set(id, real_feature_b);
+                i1.set(id, virtual_feature_w);
+                i0.set(id, virtual_feature_b);
             }
 
             bb = lsbReset(bb);
