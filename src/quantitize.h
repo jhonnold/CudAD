@@ -107,6 +107,51 @@ void quantitize_shallow(const std::string& path,
     fclose(f);
 }
 
+void quantitize_partial(const std::string& path,
+                        Network&           network,
+                        float              scalar_1 = 64,
+                        float              scalar_2 = 32) {
+    FILE* f          = fopen(path.c_str(), "wb");
+
+    auto  l0         = network.getLayers()[0];
+    auto  l0_params  = l0->getTunableParameters();
+    auto  l0_weights = l0_params[0]->values;
+    auto  l0_biases  = l0_params[1]->values;
+
+    l0_weights.gpu_download(), l0_biases.gpu_download();
+    writeMatrix<int16_t>(f, l0_weights, scalar_1, true);
+    writeMatrix<int16_t>(f, l0_biases, scalar_1);
+
+    auto l1         = network.getLayers()[1];
+    auto l1_params  = l1->getTunableParameters();
+    auto l1_weights = l1_params[0]->values;
+    auto l1_biases  = l1_params[1]->values;
+
+    l1_weights.gpu_download(), l1_biases.gpu_download();
+    writeMatrix<int8_t>(f, l1_weights, scalar_2);
+    writeMatrix<int32_t>(f, l1_biases, scalar_2);
+
+    auto l2         = network.getLayers()[2];
+    auto l2_params  = l2->getTunableParameters();
+    auto l2_weights = l2_params[0]->values;
+    auto l2_biases  = l2_params[1]->values;
+
+    l2_weights.gpu_download(), l2_biases.gpu_download();
+    writeMatrix<float>(f, l2_weights, 1);
+    writeMatrix<float>(f, l2_biases, 1);
+
+    auto l3         = network.getLayers()[3];
+    auto l3_params  = l3->getTunableParameters();
+    auto l3_weights = l3_params[0]->values;
+    auto l3_biases  = l3_params[1]->values;
+
+    l3_weights.gpu_download(), l3_biases.gpu_download();
+    writeMatrix<float>(f, l3_weights, 1);
+    writeMatrix<float>(f, l3_biases, 1);
+
+    fclose(f);
+}
+
 template<class Arch>
 void computeScalars(BatchLoader& batch_loader, Network& network, int batches, uint32_t input_size) {
 

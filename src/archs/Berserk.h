@@ -39,6 +39,8 @@ class Berserk {
     public:
     static constexpr int   Inputs        = 8 * 12 * 64;
     static constexpr int   L2            = 512;
+    static constexpr int   L3            = 8;
+    static constexpr int   L4            = 16;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 139;
 
@@ -59,12 +61,19 @@ class Berserk {
 
     static std::vector<LayerInterface*> get_layers() {
         DuplicateDenseLayer<Inputs, L2, ReLU>* l1 = new DuplicateDenseLayer<Inputs, L2, ReLU>();
-        l1->lasso_regularization                  = 1.0 / 8388608.0;
+        l1->getTunableParameters()[0]->min_allowed_value = -32;
+        l1->getTunableParameters()[0]->max_allowed_value = 32;
 
-        DenseLayer<L2 * 2, Outputs, Sigmoid>* l2  = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
-        dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = SigmoidScalar;
+        DenseLayer<2 * L2, L3, ReLU>* l2 = new DenseLayer<2 * L2, L3, ReLU>();
+        l2->getTunableParameters()[0]->min_allowed_value = -127.0 / 32;
+        l2->getTunableParameters()[0]->max_allowed_value = 127.0 / 32;
 
-        return std::vector<LayerInterface*> {l1, l2};
+        DenseLayer<L3, L4, ReLU>* l3 = new DenseLayer<L3, L4, ReLU>();
+
+        DenseLayer<L4, Outputs, Sigmoid>* l4  = new DenseLayer<L4, Outputs, Sigmoid>();
+        dynamic_cast<Sigmoid*>(l4->getActivationFunction())->scalar = SigmoidScalar;
+
+        return std::vector<LayerInterface*> {l1, l2, l3, l4};
     }
 
     static void assign_inputs_batch(DataSet&       positions,
