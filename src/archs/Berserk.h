@@ -40,7 +40,7 @@ class Berserk {
     static constexpr int   Inputs        = 8 * 12 * 64;
     static constexpr int   L2            = 512;
     static constexpr int   Outputs       = 1;
-    static constexpr float SigmoidScalar = 1.0 / 139;
+    static constexpr float SigmoidScalar = 1.0 / 150;
 
     static Optimiser*      get_optimiser() {
         Adam* optim  = new Adam();
