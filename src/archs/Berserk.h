@@ -37,7 +37,7 @@
 class Berserk {
 
     public:
-    static constexpr int   Inputs        = 8 * 12 * 64;
+    static constexpr int   Inputs        = 6 * 12 * 64;
     static constexpr int   L2            = 512;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 139;
@@ -83,14 +83,14 @@ class Berserk {
 
     static int king_square_index(int relative_king_square) {
         constexpr int indices[N_SQUARES] {
-            -1, -1, -1, -1, 7, 7, 7, 7,    //
-            -1, -1, -1, -1, 7, 7, 7, 7,    //
-            -1, -1, -1, -1, 6, 6, 6, 6,    //
-            -1, -1, -1, -1, 6, 6, 6, 6,    //
-            -1, -1, -1, -1, 4, 4, 5, 5,    //
-            -1, -1, -1, -1, 4, 4, 5, 5,    //
-            -1, -1, -1, -1, 0, 1, 2, 3,    //
-            -1, -1, -1, -1, 0, 1, 2, 3,    //
+            -1, -1, -1, -1, 5, 5, 5, 5,    //
+            -1, -1, -1, -1, 5, 5, 5, 5,    //
+            -1, -1, -1, -1, 4, 4, 4, 4,    //
+            -1, -1, -1, -1, 4, 4, 4, 4,    //
+            -1, -1, -1, -1, 2, 2, 3, 3,    //
+            -1, -1, -1, -1, 2, 2, 3, 3,    //
+            -1, -1, -1, -1, 0, 0, 1, 1,    //
+            -1, -1, -1, -1, 0, 0, 1, 1,    //
         };
 
         return indices[relative_king_square];
