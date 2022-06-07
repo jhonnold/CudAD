@@ -37,7 +37,7 @@
 class Berserk {
 
     public:
-    static constexpr int   Inputs        = 8 * 12 * 64;
+    static constexpr int   Inputs        = 2 * 8 * 12 * 64;
     static constexpr int   L2            = 512;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 139;
@@ -96,7 +96,7 @@ class Berserk {
         return indices[relative_king_square];
     }
 
-    static int index(Square psq, Piece p, Square kingSquare, Color view) {
+    static int index(int pcCount, Square psq, Piece p, Square kingSquare, Color view) {
         const PieceType pieceType  = getPieceType(p);
         const Color     pieceColor = getPieceColor(p);
 
@@ -107,7 +107,7 @@ class Berserk {
         const int oK  = (7 * !(kingSquare & 4)) ^ (56 * view) ^ kingSquare;
         const int oSq = (7 * !(kingSquare & 4)) ^ (56 * view) ^ psq;
 
-        return king_square_index(oK) * 12 * 64 + oP * 64 + oSq;
+        return (pcCount > 20) * 8 * 12 * 64 + king_square_index(oK) * 12 * 64 + oP * 64 + oSq;
     }
 
     static void assign_input(Position&      p,
@@ -122,14 +122,16 @@ class Berserk {
         Square bKingSq = p.getKingSquare<BLACK>();
 
         BB     bb {p.m_occupancy};
-        int    idx = 0;
+
+        int    pieceCount = bitCount(bb);
+        int    idx        = 0;
 
         while (bb) {
             Square sq                    = bitscanForward(bb);
             Piece  pc                    = p.m_pieces.getPiece(idx);
 
-            auto   piece_index_white_pov = index(sq, pc, wKingSq, WHITE);
-            auto   piece_index_black_pov = index(sq, pc, bKingSq, BLACK);
+            auto   piece_index_white_pov = index(pieceCount, sq, pc, wKingSq, WHITE);
+            auto   piece_index_black_pov = index(pieceCount, sq, pc, bKingSq, BLACK);
 
             if (p.m_meta.getActivePlayer() == WHITE) {
                 i0.set(id, piece_index_white_pov);
