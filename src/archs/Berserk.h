@@ -44,7 +44,7 @@ class Berserk {
 
     static Optimiser*      get_optimiser() {
              Adam* optim  = new Adam();
-             optim->lr    = 1e-2;
+             optim->lr    = 1e-3;
              optim->beta1 = 0.95;
              optim->beta2 = 0.999;
 
@@ -60,13 +60,12 @@ class Berserk {
     static std::vector<LayerInterface*> get_layers() {
         DuplicateDenseLayer<Inputs, L2, ClippedReLU>* l1 =
             new DuplicateDenseLayer<Inputs, L2, ClippedReLU>();
-        dynamic_cast<ClippedReLU*>(l1->getActivationFunction())->max = 127.0 / 32.0;
-        l1->lasso_regularization                         = 1.0 / 8388608.0;
+        dynamic_cast<ClippedReLU*>(l1->getActivationFunction())->max = 1.0;
 
         DenseLayer<L2 * 2, Outputs, Sigmoid>* l2         = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
         l2->getTunableParameters()[0]->min_allowed_value = -127.0 / 32;
         l2->getTunableParameters()[0]->max_allowed_value = 127.0 / 32;
-        dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = SigmoidScalar;
+        dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = 600 * SigmoidScalar;
 
         return std::vector<LayerInterface*> {l1, l2};
     }
