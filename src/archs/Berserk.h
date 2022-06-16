@@ -43,12 +43,12 @@ class Berserk {
     static constexpr float SigmoidScalar = 1.0 / 139;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.95;
-        optim->beta2 = 0.999;
+             Adam* optim  = new Adam();
+             optim->lr    = 1e-2;
+             optim->beta1 = 0.95;
+             optim->beta2 = 0.999;
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -117,6 +117,21 @@ class Berserk {
                              SArray<bool>&  output_mask,
                              int            id) {
 
+        float p_value = p.m_result.score;
+        float w_value = p.m_result.wdl;
+
+        // flip if black is to move -> relative network style
+        if (p.m_meta.getActivePlayer() == BLACK) {
+            p_value = -p_value;
+            w_value = -w_value;
+        }
+
+        float p_target = 1 / (1 + expf(-p_value * SigmoidScalar));
+        float w_target = (w_value + 1) / 2.0f;
+
+        if (fabs(p_target - w_target) > 0.9)
+            return;
+
         // track king squares
         Square wKingSq = p.getKingSquare<WHITE>();
         Square bKingSq = p.getKingSquare<BLACK>();
@@ -142,18 +157,6 @@ class Berserk {
             bb = lsbReset(bb);
             idx++;
         }
-
-        float p_value = p.m_result.score;
-        float w_value = p.m_result.wdl;
-
-        // flip if black is to move -> relative network style
-        if (p.m_meta.getActivePlayer() == BLACK) {
-            p_value = -p_value;
-            w_value = -w_value;
-        }
-
-        float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
-        float w_target  = (w_value + 1) / 2.0f;
 
         output(id)      = (p_target + w_target) / 2;
         output_mask(id) = true;
