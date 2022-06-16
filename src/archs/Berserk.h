@@ -110,6 +110,11 @@ class Berserk {
         return king_square_index(oK) * 12 * 64 + oP * 64 + oSq;
     }
 
+    static inline auto& get_thread_local_rng() {
+        static thread_local std::mt19937_64 s_rng(std::random_device{}());
+        return s_rng;
+    }
+
     static void assign_input(Position&      p,
                              SparseInput&   i0,
                              SparseInput&   i1,
@@ -128,9 +133,14 @@ class Berserk {
 
         float p_target = 1 / (1 + expf(-p_value * SigmoidScalar));
         float w_target = (w_value + 1) / 2.0f;
+        
+        float diff = fabs(p_target - w_target);
 
-        if (fabs(p_target - w_target) > 0.9)
-            return;
+        if (diff > 0.75) {
+            std::bernoulli_distribution distrib(0.99);
+            if (distrib(get_thread_local_rng()))
+                return;
+        }
 
         // track king squares
         Square wKingSq = p.getKingSquare<WHITE>();
@@ -158,7 +168,7 @@ class Berserk {
             idx++;
         }
 
-        output(id)      = (p_target + w_target) / 2;
+        output(id)      = p_target;
         output_mask(id) = true;
     }
 };
