@@ -43,12 +43,12 @@ class Berserk {
     static constexpr float SigmoidScalar = 1.0 / 139;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.95;
-        optim->beta2 = 0.999;
+             Adam* optim  = new Adam();
+             optim->lr    = 1e-2;
+             optim->beta1 = 0.95;
+             optim->beta2 = 0.999;
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -116,20 +116,25 @@ class Berserk {
                              SArray<float>& output,
                              SArray<bool>&  output_mask,
                              int            id) {
+        constexpr float max_phase = 64;
+        constexpr float phase_values[6] {0, 3, 3, 5, 10, 0};
 
         // track king squares
         Square wKingSq = p.getKingSquare<WHITE>();
         Square bKingSq = p.getKingSquare<BLACK>();
 
         BB     bb {p.m_occupancy};
-        int    idx = 0;
+        int    idx   = 0;
+        float  phase = 0;
 
         while (bb) {
-            Square sq                    = bitscanForward(bb);
-            Piece  pc                    = p.m_pieces.getPiece(idx);
+            Square sq = bitscanForward(bb);
+            Piece  pc = p.m_pieces.getPiece(idx);
 
-            auto   piece_index_white_pov = index(sq, pc, wKingSq, WHITE);
-            auto   piece_index_black_pov = index(sq, pc, bKingSq, BLACK);
+            phase += phase_values[getPieceType(pc)];
+
+            auto piece_index_white_pov = index(sq, pc, wKingSq, WHITE);
+            auto piece_index_black_pov = index(sq, pc, bKingSq, BLACK);
 
             if (p.m_meta.getActivePlayer() == WHITE) {
                 i0.set(id, piece_index_white_pov);
@@ -155,7 +160,10 @@ class Berserk {
         float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
         float w_target  = (w_value + 1) / 2.0f;
 
-        output(id)      = (p_target + w_target) / 2;
+        float wdl       = 0.5 + (max_phase - phase) / max_phase / 2.0;
+        float eval      = 1.0 - wdl;
+
+        output(id)      = p_target * eval + w_target * wdl;
         output_mask(id) = true;
     }
 };
