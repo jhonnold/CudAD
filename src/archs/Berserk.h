@@ -116,7 +116,6 @@ class Berserk {
                              SArray<float>& output,
                              SArray<bool>&  output_mask,
                              int            id) {
-
         // track king squares
         Square wKingSq = p.getKingSquare<WHITE>();
         Square bKingSq = p.getKingSquare<BLACK>();
@@ -143,8 +142,14 @@ class Berserk {
             idx++;
         }
 
-        float p_value = p.m_result.score;
-        float w_value = p.m_result.wdl;
+        constexpr float max_game_moves = 100.0;
+        uint8_t         move           = p.m_meta.m_move_count;
+
+        float           wdl            = std::fmin(100.0, move) / max_game_moves;
+        float           eval           = 1.0 - wdl;
+
+        float           p_value        = p.m_result.score;
+        float           w_value        = p.m_result.wdl;
 
         // flip if black is to move -> relative network style
         if (p.m_meta.getActivePlayer() == BLACK) {
@@ -155,7 +160,7 @@ class Berserk {
         float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
         float w_target  = (w_value + 1) / 2.0f;
 
-        output(id)      = (p_target + w_target) / 2;
+        output(id)      = p_target * eval + w_target * wdl;
         output_mask(id) = true;
     }
 };
