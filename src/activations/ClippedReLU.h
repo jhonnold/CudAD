@@ -24,7 +24,7 @@
 #include "Activation.h"
 
 struct ClippedReLU : Activation {
-    float max = 127;
+    float max = 1.0;
 
     // clang-format off
     void apply      (const SArray<float> &in,

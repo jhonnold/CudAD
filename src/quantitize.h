@@ -104,7 +104,7 @@ void quantitize_shallow(const std::string& path,
     auto l1_biases  = l1_params[1]->values;
 
     l1_weights.gpu_download(), l1_biases.gpu_download();
-    writeMatrix<int16_t>(f, l1_weights, scalar_2);
+    writeMatrix<int8_t>(f, l1_weights, scalar_2);
     writeMatrix<int32_t>(f, l1_biases, scalar_1 * scalar_2);
 
     fclose(f);
