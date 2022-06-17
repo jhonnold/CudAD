@@ -43,12 +43,12 @@ class Berserk {
     static constexpr float SigmoidScalar = 1.0 / 139;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.95;
-        optim->beta2 = 0.999;
+             Adam* optim  = new Adam();
+             optim->lr    = 1e-2;
+             optim->beta1 = 0.95;
+             optim->beta2 = 0.999;
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -60,9 +60,13 @@ class Berserk {
     static std::vector<LayerInterface*> get_layers() {
         DuplicateDenseLayer<Inputs, L2, ReLU>* l1 = new DuplicateDenseLayer<Inputs, L2, ReLU>();
         l1->lasso_regularization                  = 1.0 / 8388608.0;
+        l1->getTunableParameters()[0]->min_allowed_value = -16;
+        l1->getTunableParameters()[0]->max_allowed_value = 16;
 
-        DenseLayer<L2 * 2, Outputs, Sigmoid>* l2  = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
+        DenseLayer<L2 * 2, Outputs, Sigmoid>* l2         = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
         dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = SigmoidScalar;
+        l2->getTunableParameters()[0]->min_allowed_value = -127.0 / 32;
+        l2->getTunableParameters()[0]->max_allowed_value = 127.0 / 32;
 
         return std::vector<LayerInterface*> {l1, l2};
     }
