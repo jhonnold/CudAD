@@ -124,6 +124,7 @@ class Trainer {
             target_mask.gpu_upload();
 
             loss_f->loss.gpu_download();
+            loss_f->loss.cpu_values[0] *= Arch::Outputs;
 
             // measure time and print output
             timer->tock();
@@ -186,7 +187,7 @@ class Trainer {
 
             // reset loss to avoid loss of accuracy
             loss_f->loss.gpu_download();
-            total_loss_sum += loss_f->loss.cpu_values[0];
+            total_loss_sum += loss_f->loss.cpu_values[0] * Arch::Outputs;
             loss_f->loss.cpu_values[0] = 0;
             loss_f->loss.gpu_upload();
         }

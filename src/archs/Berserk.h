@@ -156,14 +156,6 @@ class Berserk {
         float w_target  = (w_value + 1) / 2.0f;
 
         int pcs = bitCount(p.m_occupancy);
-        if (std::rand() & 1)
-            while (std::rand() % 4 == 0)
-                --pcs;
-        else
-            while (std::rand() % 4 == 0)
-                ++pcs;
-        
-        pcs = std::clamp(pcs, 0, 32);
         int bucket = std::max(0, (pcs - 1) / 4 - 1);
 
         output     (id * Outputs + bucket)= (p_target + w_target) / 2;
