@@ -39,16 +39,16 @@ class Berserk {
     public:
     static constexpr int   Inputs        = 8 * 12 * 64;
     static constexpr int   L2            = 512;
-    static constexpr int   Outputs       = 7;
+    static constexpr int   Outputs       = 8;
     static constexpr float SigmoidScalar = 1.0 / 139;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.95;
-        optim->beta2 = 0.999;
+             Adam* optim  = new Adam();
+             optim->lr    = 1e-2;
+             optim->beta1 = 0.95;
+             optim->beta2 = 0.999;
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -116,20 +116,24 @@ class Berserk {
                              SArray<float>& output,
                              SArray<bool>&  output_mask,
                              int            id) {
+        constexpr int phase_values[6] {0, 3, 3, 5, 10, 0};
 
         // track king squares
         Square wKingSq = p.getKingSquare<WHITE>();
         Square bKingSq = p.getKingSquare<BLACK>();
 
         BB     bb {p.m_occupancy};
-        int    idx = 0;
+        int    idx   = 0;
+        int    phase = 0;
 
         while (bb) {
-            Square sq                    = bitscanForward(bb);
-            Piece  pc                    = p.m_pieces.getPiece(idx);
+            Square sq = bitscanForward(bb);
+            Piece  pc = p.m_pieces.getPiece(idx);
 
-            auto   piece_index_white_pov = index(sq, pc, wKingSq, WHITE);
-            auto   piece_index_black_pov = index(sq, pc, bKingSq, BLACK);
+            phase += phase_values[getPieceType(pc)];
+
+            auto piece_index_white_pov = index(sq, pc, wKingSq, WHITE);
+            auto piece_index_black_pov = index(sq, pc, bKingSq, BLACK);
 
             if (p.m_meta.getActivePlayer() == WHITE) {
                 i0.set(id, piece_index_white_pov);
@@ -152,13 +156,12 @@ class Berserk {
             w_value = -w_value;
         }
 
-        float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
-        float w_target  = (w_value + 1) / 2.0f;
+        float p_target                     = 1 / (1 + expf(-p_value * SigmoidScalar));
+        float w_target                     = (w_value + 1) / 2.0f;
 
-        int pcs = bitCount(p.m_occupancy);
-        int bucket = std::max(0, (pcs - 1) / 4 - 1);
+        int   bucket                       = (phase - 1) / 8;
 
-        output     (id * Outputs + bucket)= (p_target + w_target) / 2;
+        output(id * Outputs + bucket)      = (p_target + w_target) / 2;
         output_mask(id * Outputs + bucket) = true;
     }
 };
