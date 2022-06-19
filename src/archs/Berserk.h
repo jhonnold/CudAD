@@ -159,7 +159,7 @@ class Berserk {
         float p_target                     = 1 / (1 + expf(-p_value * SigmoidScalar));
         float w_target                     = (w_value + 1) / 2.0f;
 
-        int   bucket                       = (phase - 1) / 8;
+        int   bucket                       = std::clamp((phase - 1) / 8, 0, 7);
 
         output(id * Outputs + bucket)      = (p_target + w_target) / 2;
         output_mask(id * Outputs + bucket) = true;
