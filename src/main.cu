@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <vector>
+#include <filesystem>
 
 using namespace std;
 
@@ -29,15 +30,18 @@ int main() {
     init();
 
     const string data_path = "E:/berserk/training-data/n5k/";
-    const string output    = "./resources/runs/testing/";
+    const string output    = "./resources/runs/exp43/";
 
     // Load files
     vector<string> files {};
     for (int i = 0; i < 20; i++)
         files.push_back(data_path + "n5k." + to_string(i) + ".bin");
 
+    string run_output = output + "run7/";
+    filesystem::create_directories(run_output);
+
     Trainer<Berserk> trainer {};
-    trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
+    trainer.fit(files, vector<string> {data_path + "validation.bin"}, run_output);
 
     close();
 }

@@ -41,14 +41,15 @@ class Berserk {
     static constexpr int   L2            = 512;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 139;
+    static constexpr float lambda        = 0.7;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.95;
-        optim->beta2 = 0.999;
+             Adam* optim  = new Adam();
+             optim->lr    = 1e-2;
+             optim->beta1 = 0.95;
+             optim->beta2 = 0.999;
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -155,7 +156,7 @@ class Berserk {
         float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
         float w_target  = (w_value + 1) / 2.0f;
 
-        output(id)      = (p_target + w_target) / 2;
+        output(id)      = lambda * p_target + (1.0 - lambda) * w_target;
         output_mask(id) = true;
     }
 };
