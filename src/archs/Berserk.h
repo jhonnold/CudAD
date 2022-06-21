@@ -44,9 +44,10 @@ class Berserk {
 
     static Optimiser*      get_optimiser() {
         Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
+        optim->lr    = 2e-2;
         optim->beta1 = 0.95;
         optim->beta2 = 0.999;
+        optim->schedule = LRScheduler(1, 0.9911);
 
         return optim;
     }
