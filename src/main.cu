@@ -36,7 +36,7 @@ int main() {
     for (int i = 0; i < 20; i++)
         files.push_back(data_path + "n5k." + to_string(i) + ".bin");
     
-    Trainer<Berserk> trainer {};
+    Trainer<Berserk, 600> trainer {};
     trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
 
     close();
