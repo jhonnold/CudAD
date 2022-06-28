@@ -40,21 +40,21 @@ class Trainer {
     static constexpr int MaxInputs       = 32;
     static constexpr int BatchesPerEpoch = SamplesPerEpoch / BatchSize;
 
-    using LayerList = std::vector<LayerInterface*>;
+    using LayerList                      = std::vector<LayerInterface*>;
 
     public:
-    DenseMatrix                     target {Arch::Outputs, BatchSize};
-    SArray<bool>                    target_mask {Arch::Outputs * BatchSize};
-    Network*                        network;
-    Loss*                           loss_f;
-    Optimiser*                      optim;
+    DenseMatrix  target {Arch::Outputs, BatchSize};
+    SArray<bool> target_mask {Arch::Outputs * BatchSize};
+    Network*     network;
+    Loss*        loss_f;
+    Optimiser*   optim;
 
     Trainer() {
-        std::tuple<LayerList, LayerList> layers = Arch::get_layers();
-        LayerList inputs_layers = std::get<0>(layers);
-        LayerList hidden_layers = std::get<1>(layers);
+        std::tuple<LayerList, LayerList> layers        = Arch::get_layers();
+        LayerList                        inputs_layers = std::get<0>(layers);
+        LayerList                        hidden_layers = std::get<1>(layers);
 
-        this->optim                    = Arch::get_optimiser();
+        this->optim                                    = Arch::get_optimiser();
         this->optim->init(hidden_layers);
 
         this->loss_f = Arch::get_loss_function();
@@ -72,9 +72,8 @@ class Trainer {
         training_data.start();
 
         DataSet validation_data {};
-        for (size_t i = 0; i < validation_files.size(); i++){
-
-            DataSet ds = read<BINARY>(validation_files.at(i), 3e6);
+        for (size_t i = 0; i < validation_files.size(); i++) {
+            DataSet ds = read<BINARY>(validation_files.at(i));
             validation_data.addData(ds);
         }
 
@@ -89,7 +88,6 @@ class Trainer {
             float validation_loss = validate(&validation_data);
 
             t.tock();
-
 
             printf("\rep/ba = [%3d/%5d], ", epoch, BatchesPerEpoch);
             printf("valid_loss = [%1.8f], ", validation_loss);
@@ -106,7 +104,12 @@ class Trainer {
                        std::to_string(validation_loss)});
 
             if (epoch % 10 == 0) {
-//                quantitize_shallow(output + "nn-epoch" + std::to_string(epoch) + ".nnue", *network);
+                // write network
+                auto f = openFile(output + "nn-epoch" + std::to_string(epoch) + ".nnue");
+                writeLayer<int16_t, int16_t>(f, *network, 0, 16, 16);
+                writeLayer<int16_t, int32_t>(f, *network, 4, 512, 512 * 16);
+                closeFile(f);
+
                 network->saveWeights(output + "weights-epoch" + std::to_string(epoch) + ".nnue");
             }
 
@@ -116,7 +119,6 @@ class Trainer {
     }
 
     float train(int epoch, Timer* timer, BatchLoader* batch_loader) {
-
 
         float     epoch_loss    = 0.0;
         long long prev_duration = 0;
@@ -148,8 +150,7 @@ class Trainer {
             epoch_loss += loss_f->loss(0);
             loss_f->loss(0) = 0;
             loss_f->loss.gpu_upload();
-            network->batch(target,
-                           target_mask);
+            network->batch(target, target_mask);
             optim->apply(1);
         }
 
@@ -163,7 +164,7 @@ class Trainer {
 
         float total_loss_sum = 0;
 
-        int c = floor(validation_data->positions.size() / BatchSize);
+        int   c              = floor(validation_data->positions.size() / BatchSize);
         for (int i = 0; i < c; i++) {
             int     id1 = i * BatchSize;
             int     id2 = id1 + BatchSize;
@@ -193,10 +194,9 @@ class Trainer {
             loss_f->loss.gpu_upload();
         }
 
-
         loss_f->loss.gpu_download();
 
-        loss_f->loss(0)       = prev_loss;
+        loss_f->loss(0) = prev_loss;
         loss_f->loss.gpu_upload();
 
         return total_loss_sum / c;
