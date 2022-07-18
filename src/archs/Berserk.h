@@ -40,7 +40,7 @@ class Berserk {
     static constexpr int   Inputs        = 8 * 12 * 64;
     static constexpr int   L2            = 512;
     static constexpr int   Outputs       = 1;
-    static constexpr float SigmoidScalar = 1.0 / 139;
+    static constexpr float SigmoidScalar = 1.0 / 280;
 
     static Optimiser*      get_optimiser() {
         Adam* optim  = new Adam();
@@ -144,7 +144,7 @@ class Berserk {
             idx++;
         }
 
-        float p_value = p.m_result.score;
+        float p_value = p.m_result.score * 2;
         float w_value = p.m_result.wdl;
 
         // flip if black is to move -> relative network style
