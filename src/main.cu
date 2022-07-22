@@ -29,11 +29,11 @@ int main() {
     init();
 
     const string data_path = "E:/berserk/training-data/n5k/";
-    const string output    = "./resources/runs/exp61/";
+    const string output    = "./resources/runs/exp64/";
 
     // Load files
     vector<string> files {};
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 13; i++)
         files.push_back(data_path + "n5k." + to_string(i) + ".bin");
 
     Trainer<Berserk, 600> trainer {};
