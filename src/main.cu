@@ -28,13 +28,13 @@ using namespace std;
 int main() {
     init();
 
-    const string data_path = "E:/berserk/training-data/n5k/";
-    const string output    = "./resources/runs/exp61/";
+    const string data_path = "E:/berserk/training-data/new-data2/";
+    const string output    = "./resources/runs/exp66/";
 
     // Load files
     vector<string> files {};
-    for (int i = 0; i < 20; i++)
-        files.push_back(data_path + "n5k." + to_string(i) + ".bin");
+    for (int i = 1; i <= 32; i++)
+        files.push_back(data_path + "berserk9+2048." + to_string(i) + ".bin");
 
     Trainer<Berserk, 600> trainer {};
     trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
