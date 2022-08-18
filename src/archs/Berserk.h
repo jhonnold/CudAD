@@ -46,16 +46,16 @@ class Berserk {
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 139;
 
-    using LayerList = std::vector<LayerInterface*>;
+    using LayerList                      = std::vector<LayerInterface*>;
 
-    static Optimiser*      get_optimiser() {
-             Adam* optim     = new Adam();
-             optim->lr       = 1e-2;
-             optim->beta1    = 0.95;
-             optim->beta2    = 0.999;
-             optim->schedule = LRScheduler(250, 0.1);
+    static Optimiser* get_optimiser() {
+        Adam* optim     = new Adam();
+        optim->lr       = 1e-2;
+        optim->beta1    = 0.95;
+        optim->beta2    = 0.999;
+        optim->schedule = LRScheduler(250, 0.1);
 
-             return optim;
+        return optim;
     }
 
     static Loss* get_loss_function() {
@@ -70,11 +70,9 @@ class Berserk {
         auto i2 = new Input(true, Inputs, 32);
 
         // both accumulators merged + relu
-        auto h1                  = new DenseLayer<L2>(i1);
-        h1->lasso_regularization = 1.0 / 8388608.0;
-        auto h2                  = new DenseLayer<L2>(i2, h1);
-        h2->lasso_regularization = 1.0 / 8388608.0;
-        auto m1                  = new MergeLayer(h1, h2);
+        auto h1 = new DenseLayer<L2>(i1);
+        auto h2 = new DenseLayer<L2>(i2, h1);
+        auto m1 = new MergeLayer(h1, h2);
 
         // hidden of main network
         auto a1      = new ActivationLayer<ReLU>(m1);
@@ -84,10 +82,7 @@ class Berserk {
 
         a2->f.scalar = SigmoidScalar;
 
-        return {
-            {i1, i2}, 
-            {h1, h2, m1, a1, h3, a2}
-        };
+        return {{i1, i2}, {h1, h2, m1, a1, h3, a2}};
     }
 
     static void assign_inputs_batch(DataSet&       positions,
