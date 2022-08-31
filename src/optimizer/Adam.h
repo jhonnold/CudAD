@@ -51,11 +51,15 @@ struct Adam : Optimiser {
     virtual void apply(int batch_size) {
 
         for (int i = 0; i < tunable_values.size(); i++) {
+            double learning_rate = lr;
+            // Ugly hack for output layer doubling
+            if (i == 2 || i == 3) learning_rate *= 2;
+
             adam<DEVICE>(tunable_values[i]->values,
                          tunable_values[i]->gradients,
                          first_moments[i],
                          second_moments[i],
-                         lr,
+                         learning_rate,
                          beta1,
                          beta2,
                          eps);
