@@ -156,7 +156,11 @@ class Berserk {
         float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
         float w_target  = (w_value + 1) / 2.0f;
 
-        output(id)      = (p_target + w_target) / 2;
+        int pcs = bitCount(p.m_occupancy);
+        float wdl = 1.0 - pcs / 64.0;
+        float eval = 1.0 - wdl; 
+
+        output(id)      = p_target * eval + w_target * wdl;
         output_mask(id) = true;
     }
 };
