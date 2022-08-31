@@ -52,8 +52,8 @@ struct Adam : Optimiser {
 
         for (int i = 0; i < tunable_values.size(); i++) {
             double learning_rate = lr;
-            // Ugly hack for output layer doubling
-            if (i == 2 || i == 3) learning_rate *= 2;
+            // Ugly hack for input layer halving
+            if (i == 0 || i == 1) learning_rate /= 2.0;
 
             adam<DEVICE>(tunable_values[i]->values,
                          tunable_values[i]->gradients,
