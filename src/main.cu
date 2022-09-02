@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "archs/Berserk.h"
+#include "archs/Weiss.h"
 #include "misc/config.h"
 #include "trainer.h"
 
@@ -28,15 +28,15 @@ using namespace std;
 int main() {
     init();
 
-    const string data_path = "E:/berserk/training-data/n5k/";
-    const string output    = "./resources/runs/exp49/";
+    const string data_path = "E:/berserk/training-data/master/";
+    const string output    = "./resources/runs/weiss1/";
 
     // Load files
     vector<string> files {};
     for (int i = 0; i < 20; i++)
         files.push_back(data_path + "n5k." + to_string(i) + ".bin");
 
-    Trainer<Berserk, 600> trainer {};
+    Trainer<Weiss, 450> trainer {};
     trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
 
     close();
