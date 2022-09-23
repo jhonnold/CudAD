@@ -194,18 +194,10 @@ class Trainer {
             loss_f->loss.gpuUpload();
         }
 
-<<<<<<< HEAD
-        loss_f->loss.gpu_download();
-
-        loss_f->loss(0) = prev_loss;
-        loss_f->loss.gpu_upload();
-=======
-
         loss_f->loss.gpuDownload();
 
-        loss_f->loss(0)       = prev_loss;
+        loss_f->loss(0) = prev_loss;
         loss_f->loss.gpuUpload();
->>>>>>> main
 
         return total_loss_sum / c;
     }
