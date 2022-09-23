@@ -79,7 +79,6 @@ class Berserk {
         auto h3      = new DenseLayer<1>(a1);
 
         auto a2      = new ActivationLayer<Sigmoid>(h3);
-
         a2->f.scalar = SigmoidScalar;
 
         return {{i1, i2}, {h1, h2, m1, a1, h3, a2}};
