@@ -19,8 +19,8 @@
 #ifndef CUDAD_SRC_MAPPINGS_BERSERK_H_
 #define CUDAD_SRC_MAPPINGS_BERSERK_H_
 
-#include "../activations/ReLU.h"
 #include "../activations/Sigmoid.h"
+#include "../activations/SqReLU.h"
 #include "../data/SArray.h"
 #include "../data/SparseInput.h"
 #include "../dataset/dataset.h"
@@ -43,13 +43,13 @@ class Berserk {
     static constexpr float SigmoidScalar = 1.0 / 139;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.95;
-        optim->beta2 = 0.999;
-        optim->schedule = LRScheduler(250, 0.1);
+             Adam* optim     = new Adam();
+             optim->lr       = 1e-2;
+             optim->beta1    = 0.95;
+             optim->beta2    = 0.999;
+             optim->schedule = LRScheduler(250, 0.1);
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -59,10 +59,10 @@ class Berserk {
     }
 
     static std::vector<LayerInterface*> get_layers() {
-        DuplicateDenseLayer<Inputs, L2, ReLU>* l1 = new DuplicateDenseLayer<Inputs, L2, ReLU>();
-        l1->lasso_regularization                  = 1.0 / 8388608.0;
+        DuplicateDenseLayer<Inputs, L2, SqReLU>* l1 = new DuplicateDenseLayer<Inputs, L2, SqReLU>();
+        l1->lasso_regularization                    = 1.0 / 8388608.0;
 
-        DenseLayer<L2 * 2, Outputs, Sigmoid>* l2  = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
+        DenseLayer<L2 * 2, Outputs, Sigmoid>* l2    = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
         dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = SigmoidScalar;
 
         return std::vector<LayerInterface*> {l1, l2};

@@ -40,5 +40,7 @@
 #include "sigmoid_bp/sigmoid_bp.h"
 #include "sparse_affine/sparse_affine.h"
 #include "sparse_affine_bp/sparse_affine_bp.h"
+#include "sq_relu/sq_relu.h"
+#include "sq_relu_bp/sq_relu_bp.h"
 
 #endif    // CUDAD_SRC_OPERATIONS_OPERATIONS_H_
