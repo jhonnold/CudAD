@@ -32,7 +32,7 @@ int main() {
     init();
 
     const string   data_path = "E:/berserk/training-data/master/";
-    const string   output    = "./resources/runs/exp102/";
+    const string   output    = "./resources/runs/exp103/";
 
     vector<string> files {};
     for (int i = 0; i < 20; i++)

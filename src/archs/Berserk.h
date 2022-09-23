@@ -72,6 +72,9 @@ class Berserk {
         // both accumulators merged + relu
         auto h1 = new DenseLayer<L2>(i1);
         auto h2 = new DenseLayer<L2>(i2, h1);
+        h1->lasso_regularization = 1.0 / 3355443.2;
+        h2->lasso_regularization = 1.0 / 3355443.2; 
+
         auto m1 = new MergeLayer(h1, h2);
 
         // hidden of main network
