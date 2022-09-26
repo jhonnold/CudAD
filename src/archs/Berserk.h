@@ -38,7 +38,7 @@ class Berserk {
 
     public:
     static constexpr int   Inputs        = 16 * 12 * 64;
-    static constexpr int   L2            = 768;
+    static constexpr int   L2            = 1024;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 160;
 
