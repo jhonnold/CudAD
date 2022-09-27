@@ -39,6 +39,11 @@ struct DataSet {
     void shuffle() {
         std::shuffle(positions.begin(), positions.end(), std::mt19937(std::random_device()()));
     }
+
+    void clear() {
+        positions.clear();
+        header.position_count = 0;
+    }
 };
 
 #endif    // BINARYPOSITIONWRAPPER_SRC_DATASET_DATASET_H_
