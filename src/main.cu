@@ -99,6 +99,8 @@ int main() {
             if (pos->m_meta.getActivePlayer() == BLACK)
                 eval = -eval;
 
+            // printf("Rescoring %d -> %d for %s\n", pos->m_result.score, eval, writeFen(*pos, false).c_str());
+
             pos->m_result.score = eval;
         }
 
@@ -107,7 +109,7 @@ int main() {
         if (batch_num % BatchesPerFile == 0) {
             int idx = batch_num / BatchesPerFile;
 
-            write("E:/berserk/training-data/rescored/n5k." + to_string(idx) + ".bin", data_to_write);
+            write("E:/berserk/training-data/rescored2/n5k." + to_string(idx) + ".bin", data_to_write);
 
             data_to_write.clear();
         }
