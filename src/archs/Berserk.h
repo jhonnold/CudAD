@@ -145,18 +145,15 @@ class Berserk {
         }
 
         float p_value = p.m_result.score;
-        float w_value = p.m_result.wdl;
 
         // flip if black is to move -> relative network style
         if (p.m_meta.getActivePlayer() == BLACK) {
             p_value = -p_value;
-            w_value = -w_value;
         }
 
         float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
-        float w_target  = (w_value + 1) / 2.0f;
 
-        output(id)      = (p_target + w_target) / 2;
+        output(id)      = p_target;
         output_mask(id) = true;
     }
 };

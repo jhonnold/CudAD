@@ -28,12 +28,12 @@ using namespace std;
 int main() {
     init();
 
-    const string data_path = "E:/berserk/training-data/master/";
-    const string output    = "./resources/runs/exp102/";
+    const string data_path = "E:/berserk/training-data/rescored/";
+    const string output    = "./resources/runs/exp107/";
 
     // Load files
     vector<string> files {};
-    for (int i = 0; i < 20; i++)
+    for (int i = 1; i <= 74; i++)
         files.push_back(data_path + "n5k." + to_string(i) + ".bin");
 
     Trainer<Berserk, 600> trainer {};
