@@ -67,7 +67,7 @@ int main() {
     vector<LayerInterface*> layers = Berserk::get_layers();
     Network* network = new Network(layers);
     network->setLossFunction(Berserk::get_loss_function());
-    network->loadWeights("./resources/runs/exp106/weights-epoch600.nnue");
+    network->loadWeights("./resources/runs/exp110/weights-epoch450.nnue");
 
     std::cout << "Loaded network" << std::endl;
 
