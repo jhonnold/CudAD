@@ -29,7 +29,7 @@ int main() {
     init();
 
     const string data_path = "E:/berserk/training-data/rescored/";
-    const string output    = "./resources/runs/exp107/";
+    const string output    = "./resources/runs/exp108/";
 
     // Load files
     vector<string> files {};
