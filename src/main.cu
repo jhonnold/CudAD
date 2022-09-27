@@ -73,7 +73,8 @@ int main() {
 
     uint64_t batch_num = 0;
     while (batch_num++ < BatchesPerFile * TotalFiles) {
-        printf("Running batch %lld\n", batch_num);
+        if (batch_num % 359 == 0)
+            printf("Running batch %lld\r", batch_num);
 
         auto* ds = batch_loader.next();
 
