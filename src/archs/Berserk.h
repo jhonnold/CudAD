@@ -47,7 +47,7 @@ class Berserk {
              optim->lr       = 1e-2;
              optim->beta1    = 0.95;
              optim->beta2    = 0.999;
-             optim->schedule = LRScheduler(1, 0.992);
+             optim->schedule = LRScheduler(250, 0.1);
 
              return optim;
     }
@@ -145,15 +145,18 @@ class Berserk {
         }
 
         float p_value = p.m_result.score;
+        float w_value = p.m_result.wdl;
 
         // flip if black is to move -> relative network style
         if (p.m_meta.getActivePlayer() == BLACK) {
             p_value = -p_value;
+            w_value = -w_value;
         }
 
         float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
+        float w_target  = (w_value + 1) / 2.0f;
 
-        output(id)      = p_target;
+        output(id)      = (p_target + w_target) / 2;
         output_mask(id) = true;
     }
 };
