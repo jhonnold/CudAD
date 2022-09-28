@@ -29,6 +29,7 @@
 #include "misc/timer.h"
 #include "network/Network.h"
 #include "optimizer/Optimiser.h"
+#include "optimizer/Adam.h"
 #include "quantitize.h"
 
 #include <tuple>
@@ -64,9 +65,11 @@ class Trainer {
         target_mask.malloc_gpu();
     }
 
-    void fit(vector<string> files, vector<string> validation_files, string output) {
+    void fit(vector<string> files, vector<string> validation_files, string output, double beta1) {
         BatchLoader training_data {files, BatchSize};
         training_data.start();
+
+        dynamic_cast<Adam*>(this->optim)->beta1 = beta1;
 
         DataSet validation_data {};
         for (size_t i = 0; i < validation_files.size(); i++)

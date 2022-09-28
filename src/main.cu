@@ -29,15 +29,22 @@ int main() {
     init();
 
     const string data_path = "E:/berserk/training-data/master/";
-    const string output    = "./resources/runs/exp102/";
+    const string output    = "./resources/runs/exp113/";
 
     // Load files
     vector<string> files {};
     for (int i = 0; i < 20; i++)
         files.push_back(data_path + "n5k." + to_string(i) + ".bin");
 
-    Trainer<Berserk, 600> trainer {};
-    trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
+    int i = 1;
+    for (double beta1 : { 0.9, 0.95, 0.975, 0.99}) {
+        string output2 = output + "t" + to_string(i) + "/";
+
+        Trainer<Berserk, 450> trainer {};
+        trainer.fit(files, vector<string> {data_path + "validation.bin"}, output2, beta1);
+
+        i++;
+    }
 
     close();
 }
