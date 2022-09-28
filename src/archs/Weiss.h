@@ -37,19 +37,19 @@
 class Weiss {
 
     public:
-    static constexpr int   Inputs        = 12 * 64;
+    static constexpr int   Inputs        = 16 * 12 * 64;
     static constexpr int   L2            = 512;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 2.25 / 400;
 
     static Optimiser*      get_optimiser() {
-        Adam* optim  = new Adam();
-        optim->lr    = 1e-2;
-        optim->beta1 = 0.9;
-        optim->beta2 = 0.999;
-        optim->schedule = LRScheduler(250, 0.1);
+             Adam* optim     = new Adam();
+             optim->lr       = 1e-2;
+             optim->beta1    = 0.9;
+             optim->beta2    = 0.999;
+             optim->schedule = LRScheduler(250, 0.1);
 
-        return optim;
+             return optim;
     }
 
     static Loss* get_loss_function() {
@@ -60,7 +60,7 @@ class Weiss {
 
     static std::vector<LayerInterface*> get_layers() {
         DuplicateDenseLayer<Inputs, L2, ReLU>* l1 = new DuplicateDenseLayer<Inputs, L2, ReLU>();
-        DenseLayer<L2 * 2, Outputs, Sigmoid>* l2  = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
+        DenseLayer<L2 * 2, Outputs, Sigmoid>*  l2 = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
         dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = SigmoidScalar;
 
         return std::vector<LayerInterface*> {l1, l2};
@@ -80,14 +80,30 @@ class Weiss {
             assign_input(positions.positions[i], i0, i1, output, output_mask, i);
     }
 
+    static int king_square_index(int relative_king_square) {
+        constexpr int indices[N_SQUARES] {
+            -1, -1, -1, -1, 0,  1,  2,  3,     //
+            -1, -1, -1, -1, 4,  5,  6,  7,     //
+            -1, -1, -1, -1, 8,  9,  10, 11,    //
+            -1, -1, -1, -1, 8,  9,  10, 11,    //
+            -1, -1, -1, -1, 12, 12, 13, 13,    //
+            -1, -1, -1, -1, 12, 12, 13, 13,    //
+            -1, -1, -1, -1, 14, 14, 15, 15,    //
+            -1, -1, -1, -1, 14, 14, 15, 15,    //
+        };
+
+        return indices[relative_king_square];
+    }
+
     static int index(Square psq, Piece p, Square kingSquare, Color view) {
         const PieceType pieceType  = getPieceType(p);
         const Color     pieceColor = getPieceColor(p);
+        
+        const int       oP         = pieceType + 6 * (pieceColor != view);
+        const int       oK         = (7 * !(kingSquare & 4)) ^ (56 * view) ^ kingSquare;
+        const int       oSq        = (7 * !(kingSquare & 4)) ^ (56 * view) ^ psq;
 
-        const int oP  = pieceType + 6 * (pieceColor != view);
-        const int oSq = (7 * !(kingSquare & 4)) ^ (56 * view) ^ psq;
-
-        return oP * 64 + oSq;
+        return king_square_index(oK) * 12 * 64 + oP * 64 + oSq;
     }
 
     static void assign_input(Position&      p,
