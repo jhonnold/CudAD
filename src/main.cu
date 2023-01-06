@@ -18,6 +18,7 @@
 
 #include "archs/Berserk.h"
 #include "misc/config.h"
+#include "dataset/shuffle.h"
 #include "trainer.h"
 
 #include <iostream>
@@ -28,13 +29,21 @@ using namespace std;
 int main() {
     init();
 
-    const string data_path = "E:/berserk/training-data/master/";
-    const string output    = "./resources/runs/exp102/";
+    // vector<string> files {};
+    // for (int i = 1; i <= 100; i++)
+    //     files.push_back("E:/berserk/training-data/20k/shuffled/berserk202212.20k." + to_string(i) + ".bin");
+    // for (int i = 0; i <= 19; i++)
+    //     files.push_back("E:/berserk/training-data/master/n5k." + to_string(i) + ".bin");
+
+    // mix_and_shuffle_2(files, "E:/berserk/training-data/test/n5k+n20k.$.bin", 100);
+
+    const string data_path = "E:/berserk/training-data/test/";
+    const string output    = "./resources/runs/exp124/";
 
     // Load files
     vector<string> files {};
-    for (int i = 0; i < 20; i++)
-        files.push_back(data_path + "n5k." + to_string(i) + ".bin");
+    for (int i = 1; i <= 100; i++)
+        files.push_back(data_path + "n5k+n20k." + to_string(i) + ".bin");
 
     Trainer<Berserk, 600> trainer {};
     trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
