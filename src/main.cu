@@ -29,23 +29,15 @@ using namespace std;
 int main() {
     init();
 
-    // vector<string> files {};
-    // for (int i = 1; i <= 100; i++)
-    //     files.push_back("E:/berserk/training-data/20k/shuffled/berserk202212.20k." + to_string(i) + ".bin");
-    // for (int i = 0; i <= 19; i++)
-    //     files.push_back("E:/berserk/training-data/master/n5k." + to_string(i) + ".bin");
-
-    // mix_and_shuffle_2(files, "E:/berserk/training-data/test/n5k+n20k.$.bin", 100);
-
-    const string data_path = "E:/berserk/training-data/test/";
-    const string output    = "./resources/runs/exp124/";
+    const string data_path = "E:/berserk/training-data/koi-and-berk/";
+    const string output    = "./resources/runs/exp131/";
 
     // Load files
     vector<string> files {};
     for (int i = 1; i <= 100; i++)
-        files.push_back(data_path + "n5k+n20k." + to_string(i) + ".bin");
+        files.push_back(data_path + "koi-and-berk." + to_string(i) + ".bin");
 
-    Trainer<Berserk, 600> trainer {};
+    Trainer<Berserk, 1000> trainer {};
     trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
 
     close();
