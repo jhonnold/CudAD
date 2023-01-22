@@ -28,43 +28,8 @@
 
 using namespace std;
 
-// static constexpr uint64_t HASH_SIZE = 1024 * 1024 * 1024;
-
 int main() {
     init();
-
-    // PRNG rng(1070372);
-    // Zobrist zobrist(rng);
-
-    // vector<Key> hash;
-    // hash.resize(HASH_SIZE);
-
-    // uint64_t duplicates = 0;
-
-    // vector<string> files {};
-    // for (int i = 1; i <= 100; i++) {
-    //     auto ds = read<BINARY>("E:/berserk/training-data/exp134/exp134." + to_string(i) + ".bin");
-    //     DataSet output {};
-
-    //     for (Position pos : ds.positions) {
-    //         Key key = zobrist.get_key(pos);
-            
-    //         size_t idx = (size_t)(key & (HASH_SIZE - 1));
-    //         Key old = hash[idx];
-
-    //         if (key == old) {
-    //             duplicates++;
-    //         } else {
-    //             hash[idx] = key;
-    //             output.positions.push_back(pos);
-    //         }
-    //     }
-        
-    //     cout << "Duplicates: " << duplicates << endl;
-
-    //     output.header.position_count = output.positions.size();
-    //     write("E:/berserk/training-data/exp135/exp135." + to_string(i) + ".bin", output);
-    // }
 
     const string data_path = "E:/berserk/training-data/exp135/";
     const string output    = "./resources/runs/exp135/";

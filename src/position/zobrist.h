@@ -24,6 +24,39 @@
 
 #include <chrono>
 
+// PRNG rng(1070372);
+// Zobrist zobrist(rng);
+
+// vector<Key> hash;
+// hash.resize(HASH_SIZE);
+
+// uint64_t duplicates = 0;
+
+// vector<string> files {};
+// for (int i = 1; i <= 100; i++) {
+//     auto ds = read<BINARY>("E:/berserk/training-data/exp134/exp134." + to_string(i) + ".bin");
+//     DataSet output {};
+
+//     for (Position pos : ds.positions) {
+//         Key key = zobrist.get_key(pos);
+
+//         size_t idx = (size_t)(key & (HASH_SIZE - 1));
+//         Key old = hash[idx];
+
+//         if (key == old) {
+//             duplicates++;
+//         } else {
+//             hash[idx] = key;
+//             output.positions.push_back(pos);
+//         }
+//     }
+
+//     cout << "Duplicates: " << duplicates << endl;
+
+//     output.header.position_count = output.positions.size();
+//     write("E:/berserk/training-data/exp135/exp135." + to_string(i) + ".bin", output);
+// }
+
 class PRNG {
     uint64_t s;
 
@@ -34,7 +67,7 @@ class PRNG {
 
     public:
     PRNG() { s = 1070372; }
-    
+
     PRNG(uint64_t seed) { s = seed; }
 
     template<typename T>
@@ -93,9 +126,11 @@ class Zobrist {
         }
 
         Square epsq = pos.m_meta.getEnPassantSquare();
-        if (epsq != 0) key ^= ep[epsq];
+        if (epsq != 0)
+            key ^= ep[epsq];
 
-        uint8_t cr = pos.m_meta.m_castling_and_active_player & 0x0F; // bottom 4 bits are castling rights
+        uint8_t cr =
+            pos.m_meta.m_castling_and_active_player & 0x0F;    // bottom 4 bits are castling rights
         return key ^ castling[cr];
     }
 };
