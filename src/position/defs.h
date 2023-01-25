@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 
+typedef uint64_t Key;
 typedef uint64_t BB;
 typedef int8_t   Square;
 typedef int8_t   Diagonal;
