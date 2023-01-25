@@ -40,7 +40,7 @@ class ReductionLayer : public LayerInterface {
     F    f {};
 
     ReductionLayer() {
-        weights.values.randomise(1.0f, 1.0f);
+        weights.values.randomiseGaussian(0.0f, (float) sqrt(2.0f / R));
         weights.values.gpu_upload();
         bias.values.gpu_upload();
     }
@@ -48,7 +48,7 @@ class ReductionLayer : public LayerInterface {
     uint32_t           getOutputSize() override { return I / R; }
     uint32_t           getInputSize() override { return I; }
     std::vector<Tape*> getTunableParameters() override {
-        return std::vector<Tape*> {};
+        return std::vector<Tape*> {&weights, &bias};
     }
     Activation* getActivationFunction() override { return &f; }
     void               apply(std::vector<Tape*> inputs, Tape& out) override {

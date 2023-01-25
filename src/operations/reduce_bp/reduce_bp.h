@@ -56,8 +56,8 @@ void reduce_bp(const DenseMatrix &inp,
 //    ASSERT(inp.n == out_grd.n);
 
     if constexpr(mode == DEVICE){
-        constexpr int block_size_x = 16;
-        constexpr int block_size_y = 16;
+        constexpr int block_size_x = 32;
+        constexpr int block_size_y = 32;
 
         dim3 block(block_size_x, block_size_y);
         dim3 grid (std::ceil((float)inp_grd.n / block_size_x),

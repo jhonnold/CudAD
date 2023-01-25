@@ -26,6 +26,7 @@
 #include "../dataset/dataset.h"
 #include "../layer/DenseLayer.h"
 #include "../layer/DuplicateDenseLayer.h"
+#include "../layer/ReductionLayer.h"
 #include "../loss/Loss.h"
 #include "../loss/MPE.h"
 #include "../optimizer/Adam.h"
@@ -38,7 +39,9 @@ class Berserk {
 
     public:
     static constexpr int   Inputs        = 16 * 12 * 64;
-    static constexpr int   L2            = 512;
+    static constexpr int   FT            = 512;
+    static constexpr int   L2            = 2 * FT;
+    static constexpr int   R             = 32;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 160;
 
@@ -59,13 +62,13 @@ class Berserk {
     }
 
     static std::vector<LayerInterface*> get_layers() {
-        DuplicateDenseLayer<Inputs, L2, ReLU>* l1 = new DuplicateDenseLayer<Inputs, L2, ReLU>();
-        l1->lasso_regularization                  = 1.0 / 3355443.2;
+        DuplicateDenseLayer<Inputs, FT, ReLU>* l1 = new DuplicateDenseLayer<Inputs, FT, ReLU>();
+        ReductionLayer<L2, R, ReLU>* l2 = new ReductionLayer<L2, R, ReLU>();
+        DenseLayer<L2 / R, 32, ReLU>* l3 = new DenseLayer<L2 / R, 32, ReLU>();
+        DenseLayer<32, Outputs, Sigmoid>* l4  = new DenseLayer<32, Outputs, Sigmoid>();
+        dynamic_cast<Sigmoid*>(l4->getActivationFunction())->scalar = SigmoidScalar;
 
-        DenseLayer<L2 * 2, Outputs, Sigmoid>* l2  = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
-        dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = SigmoidScalar;
-
-        return std::vector<LayerInterface*> {l1, l2};
+        return std::vector<LayerInterface*> {l1, l2, l3, l4};
     }
 
     static void assign_inputs_batch(DataSet&       positions,
