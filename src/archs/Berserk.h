@@ -38,34 +38,45 @@ class Berserk {
 
     public:
     static constexpr int   Inputs        = 16 * 12 * 64;
-    static constexpr int   L2            = 512;
+    static constexpr int   FT            = 512;
+    static constexpr int   L2            = 1024;
+    static constexpr int   L3            = 8;
+    static constexpr int   L4            = 16;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 160;
 
     static Optimiser*      get_optimiser() {
-             Adam* optim     = new Adam();
-             optim->lr       = 1e-2;
-             optim->beta1    = 0.95;
-             optim->beta2    = 0.999;
-             optim->schedule = LRScheduler(250, 0.1);
+        Adam* optim     = new Adam();
+        optim->lr       = 5e-3;
+        optim->beta1    = 0.95;
+        optim->beta2    = 0.999;
+        optim->schedule = LRScheduler(550, 0.025);
 
-             return optim;
+        return optim;
     }
 
     static Loss* get_loss_function() {
-        MPE* loss_f = new MPE(2.5, false);
+        MPE* loss_f = new MPE(2.5);
 
         return loss_f;
     }
 
     static std::vector<LayerInterface*> get_layers() {
-        DuplicateDenseLayer<Inputs, L2, ReLU>* l1 = new DuplicateDenseLayer<Inputs, L2, ReLU>();
-        l1->lasso_regularization                  = 1.0 / 3355443.2;
+        DuplicateDenseLayer<Inputs, FT, ReLU>* l1 = new DuplicateDenseLayer<Inputs, FT, ReLU>(32);
+        l1->getTunableParameters()[0]->min_allowed_value = -1024.0;
+        l1->getTunableParameters()[0]->max_allowed_value = 1024.0;
+        l1->lasso_regularization                         = 1.0 / 16384.0 / 4194304.0;
 
-        DenseLayer<L2 * 2, Outputs, Sigmoid>* l2  = new DenseLayer<L2 * 2, Outputs, Sigmoid>();
-        dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = SigmoidScalar;
+        DenseLayer<L2, L3, ReLU>* l2                     = new DenseLayer<L2, L3, ReLU>();
+        l2->getTunableParameters()[0]->min_allowed_value = -3.96;
+        l2->getTunableParameters()[0]->max_allowed_value = 3.96;
 
-        return std::vector<LayerInterface*> {l1, l2};
+        DenseLayer<L3, L4, ReLU>*         l3             = new DenseLayer<L3, L4, ReLU>();
+
+        DenseLayer<L4, Outputs, Sigmoid>* l4             = new DenseLayer<L4, Outputs, Sigmoid>();
+        dynamic_cast<Sigmoid*>(l4->getActivationFunction())->scalar = SigmoidScalar;
+
+        return std::vector<LayerInterface*> {l1, l2, l3, l4};
     }
 
     static void assign_inputs_batch(DataSet&       positions,

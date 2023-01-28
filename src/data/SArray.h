@@ -267,6 +267,17 @@ class SArray {
             this->cpu_values[i] = distribution(generator);
         }
     }
+    void randomiseKaiming(int expected_inputs) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0.0, 1.0);
+
+        for (int i = 0; i < size; i++) {
+            auto r1 = dis(gen), r2 = dis(gen);
+            auto r = std::sqrt(-2.0 * std::log(r1)) * std::cos(2 * std::_Pi * r2);
+            this->cpu_values[i] = r * sqrt(2.0 / expected_inputs);
+        }
+    }
 
     [[nodiscard]] SArray<Type> newInstance() const { return SArray<Type> {size}; }
 

@@ -34,7 +34,7 @@ class DenseLayer : public LayerInterface {
     F    f {};
 
     DenseLayer() {
-        weights.values.randomiseGaussian(0.0f, (float) sqrt(2.0f / I));
+        weights.values.randomiseKaiming(I);
         weights.values.gpu_upload();
         bias.values.gpu_upload();
     }

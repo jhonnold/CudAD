@@ -33,7 +33,7 @@ class DuplicateDenseLayer : public LayerInterface {
     float lasso_regularization = 0;
 
     explicit DuplicateDenseLayer(int expected_active_inputs = I) {
-        weights.values.randomiseGaussian(0, 2.0f / sqrtf((float) expected_active_inputs));
+        weights.values.randomiseKaiming(expected_active_inputs);
 
         weights.values.gpu_upload();
         bias.values.gpu_upload();
