@@ -41,7 +41,7 @@ class Berserk {
     static constexpr int   FT            = 512;
     static constexpr int   L2            = 1024;
     static constexpr int   L3            = 8;
-    static constexpr int   L4            = 16;
+    static constexpr int   L4            = 32;
     static constexpr int   Outputs       = 1;
     static constexpr float SigmoidScalar = 1.0 / 160;
 
@@ -50,7 +50,7 @@ class Berserk {
         optim->lr       = 5e-3;
         optim->beta1    = 0.95;
         optim->beta2    = 0.999;
-        optim->schedule = LRScheduler(550, 0.025);
+        optim->schedule = LRScheduler(990, 0.025);
 
         return optim;
     }
