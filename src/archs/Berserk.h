@@ -38,8 +38,8 @@ class Berserk {
 
     public:
     static constexpr int   Inputs        = 16 * 12 * 64;
-    static constexpr int   FT            = 512;
-    static constexpr int   L2            = 1024;
+    static constexpr int   FT            = 768;
+    static constexpr int   L2            = (2*FT);
     static constexpr int   L3            = 8;
     static constexpr int   L4            = 32;
     static constexpr int   Outputs       = 1;
