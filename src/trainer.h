@@ -99,7 +99,7 @@ class Trainer {
                        std::to_string(validation_loss)});
 
             if (epoch % 5 == 0) {
-                quantitize_deep(output + "nn-epoch" + std::to_string(epoch) + ".nnue", *network, 64, 16);
+                quantitize_deep(output + "nn-epoch" + std::to_string(epoch) + ".nnue", *network);
             }
             if (epoch % 10 == 0) {
                 network->saveWeights(output + "weights-epoch" + std::to_string(epoch) + ".nnue");
