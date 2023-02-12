@@ -100,6 +100,8 @@ class Trainer {
 
             if (epoch % 10 == 0) {
                 quantitize_shallow(output + "nn-epoch" + std::to_string(epoch) + ".nnue", *network);
+            }
+            if (epoch % 10 == 0) {
                 network->saveWeights(output + "weights-epoch" + std::to_string(epoch) + ".nnue");
             }
 
@@ -160,7 +162,7 @@ class Trainer {
 
         float total_loss_sum = 0;
 
-        int c = floor(validation_data->positions.size() / BatchSize);
+        int   c              = floor(validation_data->positions.size() / BatchSize);
         for (int i = 0; i < c; i++) {
             int     id1 = i * BatchSize;
             int     id2 = id1 + BatchSize;
@@ -191,10 +193,9 @@ class Trainer {
             loss_f->loss.gpu_upload();
         }
 
-
         loss_f->loss.gpu_download();
 
-        loss_f->loss(0)       = prev_loss;
+        loss_f->loss(0) = prev_loss;
         loss_f->loss.gpu_upload();
 
         return total_loss_sum / c;
