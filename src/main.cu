@@ -22,6 +22,7 @@
 #include "trainer.h"
 #include "position/zobrist.h"
 #include "dataset/reader.h"
+#include "dataset/writer.h"
 
 #include <iostream>
 #include <vector>
@@ -32,12 +33,12 @@ int main() {
     init();
 
     const string data_path = "E:/berserk/training-data/master/";
-    const string output    = "./resources/runs/exp160/";
+    const string output    = "./resources/runs/exp166/";
 
     // Load files
     vector<string> files {};
     for (int i = 1; i <= 64; i++)
-        files.push_back(data_path + "exp135." + to_string(i) + ".bin");
+        files.push_back(data_path + "exp166." + to_string(i) + ".bin");
 
     Trainer<Berserk, 1320> trainer {};
     trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
