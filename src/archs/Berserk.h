@@ -61,7 +61,7 @@ class Berserk {
 
     static std::vector<LayerInterface*> get_layers() {
         DuplicateDenseLayer<Inputs, FT, ReLU>* l1 = new DuplicateDenseLayer<Inputs, FT, ReLU>(32);
-        l1->lasso_regularization                  = 1.0 / 16384.0 / 4194304.0;
+        l1->lasso_regularization                  = 2.0 / 16384.0 / 4194304.0;
 
         DenseLayer<L2, Outputs, Sigmoid>* l2      = new DenseLayer<L2, Outputs, Sigmoid>();
         dynamic_cast<Sigmoid*>(l2->getActivationFunction())->scalar = SigmoidScalar;
