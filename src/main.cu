@@ -31,15 +31,15 @@ using namespace std;
 int main() {
     init();
 
-    const string data_path = "E:/berserk/training-data/master/";
-    const string output    = "./resources/runs/exp163/";
+    const string data_path = "E:/berserk/training-data/all/bins/";
+    const string output    = "./resources/runs/exp171/";
 
     // Load files
     vector<string> files {};
-    for (int i = 1; i <= 64; i++)
-        files.push_back(data_path + "exp135." + to_string(i) + ".bin");
+    for (int i = 1; i <= 100; i++)
+        files.push_back(data_path + "all." + to_string(i) + ".bin");
 
-    Trainer<Berserk, 1320> trainer {};
+    Trainer<Berserk, 1500> trainer {};
     trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
 
     close();
