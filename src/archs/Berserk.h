@@ -39,10 +39,10 @@ class Berserk {
     public:
     static constexpr int   Inputs        = 16 * 12 * 64;
     static constexpr int   FT            = 768;
-    static constexpr int   L2            = (2*FT);
+    static constexpr int   L2            = (2 * FT);
     static constexpr int   L3            = 8;
     static constexpr int   L4            = 32;
-    static constexpr int   Outputs       = 1;
+    static constexpr int   Outputs       = 8;
     static constexpr float SigmoidScalar = 1.0 / 160;
 
     static Optimiser*      get_optimiser() {
@@ -164,11 +164,13 @@ class Berserk {
             w_value = -w_value;
         }
 
-        float p_target  = 1 / (1 + expf(-p_value * SigmoidScalar));
-        float w_target  = (w_value + 1) / 2.0f;
+        float p_target                     = 1 / (1 + expf(-p_value * SigmoidScalar));
+        float w_target                     = (w_value + 1) / 2.0f;
 
-        output(id)      = (p_target + w_target) / 2;
-        output_mask(id) = true;
+        int   bucket                       = (bitCount(p.m_occupancy) - 1) / 4;
+
+        output(id * Outputs + bucket)      = (p_target + w_target) / 2;
+        output_mask(id * Outputs + bucket) = true;
     }
 };
 
