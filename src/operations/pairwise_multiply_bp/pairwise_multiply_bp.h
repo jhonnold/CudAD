@@ -19,7 +19,7 @@
 #ifndef CUDAD_SRC_OPERATIONS_PAIRWISE_MULTIPLY_BP_PAIRWISE_MULTIPLY_BP_H_
 #define CUDAD_SRC_OPERATIONS_PAIRWISE_MULTIPLY_BP_PAIRWISE_MULTIPLY_BP_H_
 
-#include "../../data/SArray.h"
+#include "../../data/DenseMatrix.h"
 #include "../../data/mode.h"
 #include "../../misc/config.h"
 
@@ -28,13 +28,14 @@ __global__ void pairwise_multiply_bp_kernel(
     const float* __restrict__ input,
           float* __restrict__ input_grd,
     const float* __restrict__ output_grd,
-    unsigned int outsize);
+    unsigned int outsize,
+    unsigned int neurons);
 
 template<Mode mode>
 inline void pairwise_multiply_bp (
-               const SArray<float>& input,
-                     SArray<float>& input_grd,
-               const SArray<float>& output_grd){
+               const DenseMatrix& input,
+                     DenseMatrix& input_grd,
+               const DenseMatrix& output_grd){
     if(mode == DEVICE){
 
         ASSERT(input.gpu_values);
@@ -46,11 +47,15 @@ inline void pairwise_multiply_bp (
         constexpr int block_size = 1024;
         dim3 block(block_size);
         dim3 grid (std::ceil((float)output_grd.size / block_size));
+
+        unsigned int neurons = output_grd.m;
+
         pairwise_multiply_bp_kernel<<<grid, block>>>(
             input     .gpu_values,
             input_grd .gpu_values,
             output_grd.gpu_values,
-            output_grd.size);
+            output_grd.size,
+            neurons);
     }else{
         ASSERT(false);
     }

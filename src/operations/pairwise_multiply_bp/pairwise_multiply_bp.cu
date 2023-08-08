@@ -23,7 +23,8 @@ __global__ void pairwise_multiply_bp_kernel(
     const float* __restrict__ input,
           float* __restrict__ input_grd,
     const float* __restrict__ output_grd,
-    unsigned int outsize){
+    unsigned int outsize,
+    unsigned int neurons){
     // clang-format on
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -31,8 +32,10 @@ __global__ void pairwise_multiply_bp_kernel(
     if (idx >= outsize)
         return;
 
-    int idx1        = idx * 2;
-    int idx2        = idx1 + 1;
+    int halfsize = neurons / 2;
+
+    int idx1 = idx + halfsize * (idx / halfsize);
+    int idx2 = idx1 + halfsize;
 
     input_grd[idx1] = output_grd[idx] * input[idx2];
     input_grd[idx2] = output_grd[idx] * input[idx1];
