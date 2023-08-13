@@ -32,13 +32,13 @@ using namespace std;
 int main() {
     init();
 
-    const string data_path = "E:/berserk/data/shuffled/";
-    const string output    = "./resources/runs/exp200/";
+    const string data_path = "C:/Programming/berserk-data/exp203/";
+    const string output    = "./resources/runs/exp203/";
 
     // Load files
     vector<string> files {};
-    for (int i = 1; i <= 128; i++)
-        files.push_back(data_path + "exp200." + to_string(i) + ".bin");
+    for (int i = 1; i <= 200; i++)
+        files.push_back(data_path + "exp203." + to_string(i) + ".bin");
 
     Trainer<Berserk, 1500> trainer {};
     trainer.fit(files, vector<string> {data_path + "validation.bin"}, output);
