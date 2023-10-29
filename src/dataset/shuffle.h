@@ -93,7 +93,7 @@ inline void mix_and_shuffle(std::vector<std::string>& files,
               << " files" << std::endl;
 
     std::srand(time(NULL));
-    uint64_t number_out_files   = 10;
+    uint64_t number_out_files   = num_files;
     uint64_t positions_per_file = total_positions / number_out_files;
 
     std::cout << "Creating " << number_out_files << " files with " << positions_per_file
@@ -185,6 +185,8 @@ inline void mix_and_shuffle_2(std::vector<std::string>& files,
     // going through each file and writing the output files
     int count = 0;
     for (std::string s : files) {
+        std::cout << "Reading from " << s << std::endl;
+
         DataSet ds = read<BINARY>(s);
         for (Position& p : ds.positions) {
             // select a outfile
@@ -219,6 +221,9 @@ inline void mix_and_shuffle_2(std::vector<std::string>& files,
         // regenerate the file name
         std::string file_name = out_format;
         file_name             = std::regex_replace(file_name, std::regex("\\$"), std::to_string(i + 1));
+
+        std::cout << "Shuffling " << file_name << std::endl;
+
         // read
         DataSet ds = read<BINARY>(file_name);
         // shuffle

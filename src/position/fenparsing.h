@@ -128,12 +128,12 @@ inline Position parseFen(const std::string& fen) {
     // read castling rights
     // -----------------------------------------------------------------------------------------------
     for (; character_index < fen.size() && fen[character_index] != ' '; character_index++) {
-        if (fen[character_index] == '-')
+        // if (fen[character_index] == '-')
             continue;
-        FenCharacter& ch    = fen_character_lookup[fen[character_index]];
-        Side          side  = getPieceType(ch.piece) == QUEEN ? QUEEN_SIDE : KING_SIDE;
-        Color         color = getPieceColor(ch.piece);
-        position.m_meta.setCastlingRight(color, side, true);
+        // FenCharacter& ch    = fen_character_lookup[fen[character_index]];
+        // Side          side  = getPieceType(ch.piece) == QUEEN ? QUEEN_SIDE : KING_SIDE;
+        // Color         color = getPieceColor(ch.piece);
+        // position.m_meta.setCastlingRight(color, side, true);
     }
     character_index++;
 
@@ -261,7 +261,7 @@ inline std::string writeFen(const Position& position, bool write_score = false) 
 
     if (write_score) {
         ss << " [";
-        ss << (position.m_result.wdl == WIN ? "1" : (position.m_result.wdl == LOSS ? "0" : "0.5"));
+        ss << (position.m_result.wdl == WIN ? "1.0" : (position.m_result.wdl == LOSS ? "0.0" : "0.5"));
         ss << "] " << position.m_result.score;
     }
 
